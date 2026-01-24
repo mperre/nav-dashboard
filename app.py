@@ -7,14 +7,13 @@ import time
 # ==========================================
 st.set_page_config(page_title="COMMAND INTERFACE", layout="wide")
 
-# Initialize Session State
 if 'secure_mode' not in st.session_state:
     st.session_state.secure_mode = False
 
 def toggle_secure():
     st.session_state.secure_mode = not st.session_state.secure_mode
 
-# Secrets Handling (with fallback)
+# Secrets Handling
 try:
     if "ACCOUNT_ID" in st.secrets:
         ACCOUNT_ID = st.secrets["ACCOUNT_ID"]
@@ -28,7 +27,7 @@ except:
     st.stop()
 
 # ==========================================
-# 2. CSS STYLING (FULL WIDTH & MOBILE OPTIMIZED)
+# 2. CSS STYLING
 # ==========================================
 bg_color = "#000000" if st.session_state.secure_mode else "#0d1117"
 
@@ -36,86 +35,94 @@ st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
 
-/* --- GLOBAL RESET & LAYOUT --- */
+/* --- GLOBAL RESET --- */
 .stApp {{
     background-color: {bg_color} !important;
 }}
 
-/* Force the main container to fill the screen and use Flexbox */
 .block-container {{
-    padding: 0 !important; /* Remove ALL default padding */
+    padding: 0 !important;
     max-width: 100% !important;
     margin: 0 auto;
-    height: 100vh;           /* Force full viewport height */
-    min-height: -webkit-fill-available; /* Mobile fix */
+    /* Force container to fill screen height so flexbox works */
+    height: 100vh; 
+    min-height: -webkit-fill-available;
     display: flex;
     flex-direction: column;
-    gap: 0 !important;
 }}
 
-/* Hide standard Streamlit elements */
+/* Hide standard elements */
 header, footer, [data-testid="stToolbar"] {{display: none !important;}}
 
-/* --- DASHBOARD CONTENT (GROWS TO FILL SPACE) --- */
+/* --- DASHBOARD LAYOUT (Fills space above button) --- */
 .dashboard-container {{
-    flex: 1; /* This pushes the button to the bottom */
+    /* Calculate height: 100vh minus the height of the button (approx 70px) */
+    height: calc(100vh - 70px);
+    width: 100%;
+    padding: 10px 10px 0 10px; /* Top/Side padding, 0 bottom */
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    width: 100%;
-    padding: 10px; /* Internal padding for the boxes */
     gap: 10px;
-    box-sizing: border-box;
-    overflow-y: auto; /* Allow scrolling if content is too tall */
 }}
 
 /* --- BOX STYLING --- */
-.nav-box, .trade-box {{
+.nav-box {{
+    /* This forces the top box to GROW and fill all empty space */
+    flex-grow: 1; 
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
     padding: 10px;
     position: relative;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     display: flex;
     flex-direction: column;
 }}
 
-.nav-box {{
-    flex: 4; /* Takes ~60% of vertical space */
-    min-height: 200px;
-}}
-
 .trade-box {{
-    flex: 3; /* Takes ~40% of vertical space */
-    min-height: 150px;
+    /* This box only takes as much space as it needs (or a fixed height) */
+    flex-grow: 0; 
+    height: 200px; /* Fixed height for the trade window, like the original */
+    background-color: #1e272e;
+    border: 3px solid #485460;
+    border-radius: 6px;
+    padding: 10px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
 }}
 
-/* --- BUTTON STYLING (FULL WIDTH BOTTOM) --- */
+/* --- BUTTON STYLING (FIXED FOOTER) --- */
+/* We fix the button to the bottom to ensure it covers full width */
 div.stButton {{
+    position: fixed;
+    bottom: 0;
+    left: 0;
     width: 100% !important;
-    padding: 0 10px 15px 10px !important; /* Padding for iPhone Home Bar */
-    background-color: {bg_color}; /* Blend with background */
-    box-sizing: border-box;
+    z-index: 999;
+    padding: 0 !important;
+    margin: 0 !important;
+    background-color: #000; /* Match background behind button */
 }}
 
 div.stButton > button {{
     width: 100% !important;
     background-color: #2f3640 !important;
     color: #808e9b !important;
-    border: 1px solid #485460 !important;
+    border: none !important;
     border-top: 2px solid #485460 !important;
     font-family: 'Orbitron', sans-serif !important;
-    height: 65px !important; /* Finger-friendly touch target */
+    height: 70px !important; /* Taller touch target */
     font-size: 16px !important;
     letter-spacing: 2px;
-    border-radius: 6px !important;
+    border-radius: 0 !important; /* Square edges for full-width look */
     font-weight: 700;
     text-transform: uppercase;
-    box-shadow: 0 -4px 10px rgba(0,0,0,0.3);
 }}
 
-div.stButton > button:active {{
-    transform: scale(0.98);
+div.stButton > button:hover {{
+    color: #0be881 !important;
+    background-color: #1e272e !important;
 }}
 
 /* --- TYPOGRAPHY & SCREENS --- */
@@ -135,7 +142,7 @@ div.stButton > button:active {{
     border: 2px solid #2d3436;
     border-radius: 4px;
     box-shadow: inset 0 0 30px rgba(255,255,255,0.02);
-    flex: 1;
+    flex: 1; /* Screens fill their parent boxes */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -145,8 +152,8 @@ div.stButton > button:active {{
 
 .nav-value {{
     font-family: 'Orbitron', sans-serif;
-    /* Responsive sizing: 18% of view width, capped at 160px */
-    font-size: min(18vw, 160px); 
+    /* Massive responsive font that scales with height */
+    font-size: min(25vh, 25vw); 
     color: #0be881;
     font-weight: 900;
     text-shadow: 0 0 20px rgba(11,232,129,0.4);
@@ -154,7 +161,7 @@ div.stButton > button:active {{
     margin-top: -10px; 
 }}
 
-/* --- TABLE STYLING --- */
+/* --- TABLE --- */
 .trade-table {{
     width: 100%;
     color: #dcdde1;
@@ -176,7 +183,7 @@ div.stButton > button:active {{
     text-align: center; 
 }}
 
-/* --- VISUAL DETAILS --- */
+/* --- VISUALS --- */
 .screw {{
     position: absolute; width: 6px; height: 6px;
     background: #57606f; border-radius: 50%; 
@@ -211,18 +218,17 @@ def get_data():
 # 4. RENDER UI
 # ==========================================
 
-# Determine State
+# RENDER BUTTON (RENDERED FIRST, BUT CSS MOVES IT TO BOTTOM)
 if st.session_state.secure_mode:
-    # SECURE STATE (Hidden Data)
     btn_label = "👁️ ACTIVATE SYSTEM"
-    opacity = "0"
-    nav_str = ""
-    rows = ""
 else:
-    # ACTIVE STATE (Visible Data)
     btn_label = "🔒 SECURE SYSTEM"
-    opacity = "1"
-    
+
+# Render the button. It is independent of the secure mode logic below.
+st.button(btn_label, on_click=toggle_secure)
+
+# RENDER DASHBOARD CONTENT (ONLY IF NOT SECURE)
+if not st.session_state.secure_mode:
     acct, trades = get_data()
     nav_str = "£750" 
     if acct: 
@@ -244,7 +250,6 @@ else:
                     if (u > 0 and tv > p) or (u < 0 and tv < p):
                         l_s, l_c = "LOCKED", "locked"
 
-            # WARNING: FLUSH LEFT HTML - DO NOT INDENT
             rows += f"""<tr>
 <td class="{s_cls}">{side}</td>
 <td>{int(u)}</td>
@@ -256,15 +261,15 @@ else:
     else:
         rows = "<tr><td colspan='6' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
 
-# RENDER DASHBOARD (FLUSH LEFT)
-st.markdown(f"""
+    # HTML BLOCK (Flush Left)
+    st.markdown(f"""
 <div class="dashboard-container">
 <div class="nav-box">
 <div class="screw tl"></div><div class="screw tr"></div>
 <div class="screw bl"></div><div class="screw br"></div>
 <div class="label-text">NAV MONITOR</div>
 <div class="screen">
-<div class="nav-value" style="opacity: {opacity}; transition: opacity 0.3s;">{nav_str}</div>
+<div class="nav-value">{nav_str}</div>
 </div>
 </div>
 <div class="trade-box">
@@ -272,7 +277,7 @@ st.markdown(f"""
 <div class="screw bl"></div><div class="screw br"></div>
 <div class="label-text">ACTIVE TRANSMISSIONS</div>
 <div class="screen" style="display:block; padding:0; overflow-y:auto;">
-<table class="trade-table" style="opacity: {opacity}; transition: opacity 0.3s;">
+<table class="trade-table">
 <thead>
 <tr style="background:#000;">
 <th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th><th>TSL</th><th>LOCK</th>
@@ -284,9 +289,6 @@ st.markdown(f"""
 </div>
 </div>
 """, unsafe_allow_html=True)
-
-# RENDER BUTTON (Automatically pushed to bottom by Flexbox)
-st.button(btn_label, on_click=toggle_secure)
 
 # AUTO REFRESH
 time.sleep(2)
