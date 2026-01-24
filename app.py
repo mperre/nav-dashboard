@@ -113,7 +113,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 }}
 
 .dashboard-container {{
-    height: calc(100vh - 72px);
+    height: calc(100vh - 70px);
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -331,3 +331,4 @@ st.markdown(dashboard_html, unsafe_allow_html=True)
 
 time.sleep(2)
 st.rerun()
+
