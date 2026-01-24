@@ -27,9 +27,8 @@ except:
     st.stop()
 
 # ==========================================
-# 2. CSS STYLING (Standard String - No Crash)
+# 2. CSS STYLING (Standard String to avoid F-String Crashes)
 # ==========================================
-# We use a standard string (not f-string) to avoid syntax conflicts with CSS brackets.
 css_template = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
@@ -42,15 +41,16 @@ css_template = """
 /* LAYOUT CONTAINER */
 .block-container {
     margin: 0 !important;
-    margin-top: -55px !important; /* Hide Streamlit Header */
     
-    /* UNIFORM BORDERS */
-    /* 10px Top, 10px Left, 10px Right */
+    /* AGGRESSIVE HEADER HIDE: Pulls content up significantly */
+    margin-top: -65px !important; 
+    
+    /* UNIFORM BORDERS: Exact 10px spacing on Top/Left/Right */
     padding-top: 10px !important;
     padding-left: 10px !important;
     padding-right: 10px !important;
     
-    /* Bottom padding is 0 because the button is an overlay */
+    /* Bottom padding 0 because button logic handles it */
     padding-bottom: 0 !important;
     
     max-width: 100% !important;
@@ -64,20 +64,21 @@ css_template = """
 header, footer, [data-testid="stToolbar"] {display: none !important;}
 
 /* DASHBOARD WRAPPER */
-/* Calculates remaining height to ensure bottom gap matches top gap */
-/* 100vh - 70px (Button) - 10px (Desired Gap) = 80px subtraction */
+/* Calculates height to stop exactly 10px above the button */
+/* 100vh - 60px (Button) - 10px (Gap) = 70px subtraction */
 .dashboard-container {
-    height: calc(100vh - 80px);
+    height: calc(100vh - 70px);
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 10px; /* Gap between the two boxes */
+    gap: 10px; /* Gap between Nav Box and Trade Box */
+    padding-bottom: 10px; /* Gap between Trade Box and Button */
     box-sizing: border-box;
 }
 
-/* NAV BOX (TOP) - DOMINANT EXPANDER */
+/* NAV BOX (TOP) - DOMINANT */
 .nav-box {
-    flex: 1; /* Grows to occupy all empty space */
+    flex: 1; /* Expands to fill all empty vertical space */
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -86,13 +87,13 @@ header, footer, [data-testid="stToolbar"] {display: none !important;}
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    min-height: 200px; 
+    min-height: 150px; 
 }
 
 /* TRADE BOX (BOTTOM) - COMPACT */
 .trade-box {
-    flex: 0 0 auto; /* Only takes required height */
-    max-height: 40vh; /* Limits max growth */
+    flex: 0 0 auto; /* Only takes height needed for content */
+    max-height: 40vh; /* Limits growth to 40% of screen */
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -112,7 +113,7 @@ div.stButton {
     z-index: 9999;
     padding: 0 !important;
     margin: 0 !important;
-    background-color: BG_COLOR_PLACEHOLDER; /* Seamless background */
+    background-color: BG_COLOR_PLACEHOLDER;
 }
 
 div.stButton > button {
@@ -122,7 +123,7 @@ div.stButton > button {
     border: none !important;
     border-top: 2px solid #485460 !important;
     font-family: 'Orbitron', sans-serif !important;
-    height: 70px !important;
+    height: 60px !important; /* Slightly reduced height for sleeker look */
     font-size: 16px !important;
     letter-spacing: 2px;
     border-radius: 0 !important;
@@ -215,7 +216,7 @@ div.stButton > button:hover {
 </style>
 """
 
-# Inject Dynamic Background Color
+# Inject Dynamic Background Color Safely
 bg_color = "#000000" if st.session_state.secure_mode else "#0d1117"
 st.markdown(css_template.replace("BG_COLOR_PLACEHOLDER", bg_color), unsafe_allow_html=True)
 
@@ -269,7 +270,7 @@ if not st.session_state.secure_mode:
                     if (u > 0 and tv > p) or (u < 0 and tv < p):
                         l_s, l_c = "LOCKED", "locked"
 
-            # FLUSH LEFT HTML - NO INDENTATION
+            # FLUSH LEFT HTML
             rows += f"""<tr>
 <td class="{s_cls}">{side}</td>
 <td>{int(u)}</td>
