@@ -62,7 +62,7 @@ css_template = f"""
 /* -----------------------------------------------------------
    CONFETTI IFRAME FIX
    Force the iframe to be fixed/fullscreen but transparent.
-   It sits on top (z-index high) but lets clicks pass through (pointer-events: none).
+   It sits on top (z-index high) but lets clicks pass through.
 ----------------------------------------------------------- */
 iframe {{
     position: fixed !important;
@@ -103,7 +103,8 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 .block-container {{
     margin: 0 !important;
     margin-top: -55px !important; 
-    padding: 35px 10px 0 10px !important;
+    /* MOVED UP 8px: Changed 35px to 27px */
+    padding: 27px 10px 0 10px !important;
     max-width: 100% !important;
     height: 100vh !important; 
     min-height: 100vh !important;
@@ -113,7 +114,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 }}
 
 .dashboard-container {{
-    height: calc(100vh - 70px);
+    height: calc(100vh - 72px);
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -170,8 +171,7 @@ st.markdown(css_template, unsafe_allow_html=True)
 # ==========================================
 # 3. JAVASCRIPT INJECTION (CONFETTI)
 # ==========================================
-# Changed height back to 0 to fix layout dropping. 
-# The global CSS 'iframe { position: fixed ... }' ensures it is still visible.
+# Reverted height to 0. CSS 'iframe { position: fixed ... }' handles visibility.
 confetti_html = """
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script>
@@ -222,7 +222,7 @@ confetti_html = """
         }
     }
 
-    // Capture Phase Listeners (True) - Detects swipe before button blocks it
+    // Capture Phase Listeners
     doc.addEventListener('touchstart', onTouchStart, true);
     doc.addEventListener('touchend', onTouchEnd, true);
 </script>
@@ -331,4 +331,3 @@ st.markdown(dashboard_html, unsafe_allow_html=True)
 
 time.sleep(2)
 st.rerun()
-
