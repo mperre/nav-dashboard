@@ -49,7 +49,6 @@ st.markdown(f"""
 header, footer {{display: none !important;}}
 
 /* DASHBOARD WRAPPER */
-/* This div wraps our two boxes and takes all available space */
 .dashboard-container {{
     flex: 1; 
     display: flex;
@@ -60,7 +59,7 @@ header, footer {{display: none !important;}}
 
 /* NAV BOX - THE FLEXIBLE GIANT */
 .nav-box {{
-    flex-grow: 1;  /* This is the magic: Expand to fill space! */
+    flex-grow: 1;  /* This forces it to expand */
     flex-shrink: 1;
     min-height: 150px;
     background-color: #1e272e;
@@ -78,7 +77,7 @@ header, footer {{display: none !important;}}
     flex-grow: 0;
     flex-shrink: 0;
     height: auto;
-    max-height: 60vh; /* Don't let it eat the whole screen */
+    max-height: 60vh;
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 8px;
@@ -90,8 +89,11 @@ header, footer {{display: none !important;}}
 }}
 
 /* BUTTON STYLING (FULL WIDTH) */
-div.stButton > button:first-child {{
+div.stButton {{
     width: 100%;
+}}
+div.stButton > button {{
+    width: 100% !important;
     background-color: #2f3640;
     color: #808e9b;
     border: 1px solid #485460;
@@ -99,6 +101,7 @@ div.stButton > button:first-child {{
     height: 60px;
     font-size: 14px;
     border-radius: 8px;
+    display: block;
 }}
 div.stButton > button:hover {{
     border-color: #0be881;
@@ -180,7 +183,7 @@ def get_data():
     return None, None
 
 # ==========================================
-# 4. RENDER UI (STRICT NO-INDENT HTML)
+# 4. RENDER UI (STRICT FLUSH LEFT HTML)
 # ==========================================
 
 if st.session_state.stealth_mode:
@@ -210,6 +213,7 @@ else:
                     if (u > 0 and tv > p) or (u < 0 and tv < p):
                         l_s, l_c = "LOCKED", "locked"
 
+            # WARNING: DO NOT INDENT THIS HTML STRING
             rows += f"""<tr>
 <td class="{s_cls}">{side}</td>
 <td>{int(u)}</td>
@@ -221,8 +225,7 @@ else:
     else:
         rows = "<tr><td colspan='6' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
 
-    # NOTE: The HTML strings below are deliberately NOT indented.
-    # Do not add spaces before the <div tags.
+    # WARNING: DO NOT INDENT THE HTML BELOW. IT MUST TOUCH THE LEFT MARGIN.
     st.markdown(f"""
 <div class="dashboard-container">
 <div class="nav-box">
@@ -251,7 +254,7 @@ else:
 </div>
 """, unsafe_allow_html=True)
 
-    # The button sits outside the HTML block, at the bottom of the flex column
+    # The button sits outside the HTML block to ensure full width
     st.button("⚫ BLACKOUT MODE", on_click=toggle_stealth)
 
 time.sleep(2)
