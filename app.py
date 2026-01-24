@@ -32,7 +32,7 @@ except:
     st.stop()
 
 # ==========================================
-# 2. CSS STYLING (CRITICAL FIXES)
+# 2. CSS STYLING
 # ==========================================
 if st.session_state.secure_mode:
     dash_opacity = "0"
@@ -60,9 +60,9 @@ css_template = f"""
 * {{ -ms-overflow-style: none; scrollbar-width: none; }}
 
 /* -----------------------------------------------------------
-   CRITICAL FIX: MAKE THE CONFETTI IFRAME FULL SCREEN
-   Streamlit components render in iframes. We must force them 
-   to sit on top of everything but ignore clicks (pointer-events: none)
+   CONFETTI IFRAME FIX
+   Force the iframe to be fixed/fullscreen but transparent.
+   It sits on top (z-index high) but lets clicks pass through (pointer-events: none).
 ----------------------------------------------------------- */
 iframe {{
     position: fixed !important;
@@ -70,9 +70,10 @@ iframe {{
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    z-index: 2147483647 !important; /* Highest possible Z-Index */
-    pointer-events: none !important; /* Let clicks pass through to the button */
+    z-index: 2147483647 !important; 
+    pointer-events: none !important; 
     background: transparent !important;
+    border: none !important;
 }}
 
 /* FULL SCREEN INTERACTION BUTTON */
@@ -169,8 +170,8 @@ st.markdown(css_template, unsafe_allow_html=True)
 # ==========================================
 # 3. JAVASCRIPT INJECTION (CONFETTI)
 # ==========================================
-# Note: We set height=1000 temporarily to ensure the iframe is rendered, 
-# but CSS above forces it to 100vh fixed.
+# Changed height back to 0 to fix layout dropping. 
+# The global CSS 'iframe { position: fixed ... }' ensures it is still visible.
 confetti_html = """
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script>
@@ -221,15 +222,12 @@ confetti_html = """
         }
     }
 
-    // Capture Phase Listeners (True)
+    // Capture Phase Listeners (True) - Detects swipe before button blocks it
     doc.addEventListener('touchstart', onTouchStart, true);
     doc.addEventListener('touchend', onTouchEnd, true);
-    
-    // Test fire on load to confirm it works (Remove if annoying)
-    // setTimeout(shootConfetti, 1000); 
 </script>
 """
-components.html(confetti_html, height=100) # Height ensures iframe exists
+components.html(confetti_html, height=0)
 
 # ==========================================
 # 4. HAPTIC LOGIC
