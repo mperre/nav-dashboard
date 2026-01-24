@@ -33,94 +33,76 @@ except:
     st.stop()
 
 # ==========================================
-# 2. JAVASCRIPT INJECTION (CONFETTI + HAPTIC)
+# 2. JAVASCRIPT INJECTION (SWIPE DETECTION)
 # ==========================================
-# We inject a script that loads the confetti library and listens for a long-press.
+# We inject a script that listens for Touch Start and Touch End events to calculate swipes.
 confetti_html = """
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script>
-    // Access the main parent window (the Streamlit app)
     const doc = window.parent.document;
     
-    let pressTimer;
+    // Variables to store touch start position
+    let touchStartX = 0;
+    let touchStartY = 0;
 
-    // The Confetti Cannon Function
+    // CONFETTI CANNON FUNCTION
     function shootConfetti() {
-        // Haptic vibration if supported
+        // Haptic tap (Android only, usually ignored by iOS)
         try { window.navigator.vibrate(200); } catch(e) {}
 
-        // Cannon configuration (Shoots from bottom center up)
         var duration = 3000;
         var animationEnd = Date.now() + duration;
         var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 99999999 };
-
         var randomInRange = (min, max) => Math.random() * (max - min) + min;
 
         var interval = setInterval(function() {
             var timeLeft = animationEnd - Date.now();
-
-            if (timeLeft <= 0) {
-                return clearInterval(interval);
-            }
-
+            if (timeLeft <= 0) { return clearInterval(interval); }
             var particleCount = 50 * (timeLeft / duration);
             
-            // Generate particles
-            confetti(Object.assign({}, defaults, { 
-                particleCount, 
-                origin: { x: randomInRange(0.1, 0.9), y: Math.random() - 0.2 } 
-            }));
             confetti(Object.assign({}, defaults, { 
                 particleCount, 
                 origin: { x: randomInRange(0.1, 0.9), y: Math.random() - 0.2 } 
             }));
         }, 250);
         
-        // Big blast at the start
+        // Initial Blast
         confetti({
-            particleCount: 150,
-            spread: 100,
-            origin: { y: 1 }, // Bottom of screen
-            colors: ['#0be881', '#ffffff', '#57606f'], // Your theme colors
-            startVelocity: 70,
-            gravity: 0.8,
-            scalar: 1.2,
-            drift: 0,
-            zIndex: 99999999
+            particleCount: 150, spread: 100, origin: { y: 1 },
+            colors: ['#0be881', '#ffffff', '#57606f'],
+            startVelocity: 70, gravity: 0.8, scalar: 1.2, zIndex: 99999999
         });
     }
 
-    // Start Timer on Mouse Down / Touch Start
-    function startPress() {
-        // Clear any existing timer just in case
-        clearTimeout(pressTimer);
-        // Set timer for 3 seconds (3000ms)
-        pressTimer = setTimeout(shootConfetti, 3000);
-    }
+    // LISTENER: Touch Start (Record starting X,Y)
+    doc.addEventListener('touchstart', function(e) {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+    }, false);
 
-    // Cancel Timer on Mouse Up / Touch End / Mouse Leave
-    function cancelPress() {
-        clearTimeout(pressTimer);
-    }
+    // LISTENER: Touch End (Calculate distance and direction)
+    doc.addEventListener('touchend', function(e) {
+        let touchEndX = e.changedTouches[0].screenX;
+        let touchEndY = e.changedTouches[0].screenY;
+        
+        let diffX = touchEndX - touchStartX;
+        let diffY = touchEndY - touchStartY;
 
-    // Attach listeners to the parent document (the whole screen)
-    doc.addEventListener("mousedown", startPress);
-    doc.addEventListener("touchstart", startPress);
-    
-    doc.addEventListener("mouseup", cancelPress);
-    doc.addEventListener("mouseleave", cancelPress);
-    doc.addEventListener("touchend", cancelPress);
+        // Logic: 
+        // 1. Horizontal swipe must be > 50px
+        // 2. Horizontal movement must be greater than Vertical movement (to ignore scrolling)
+        if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
+            shootConfetti();
+        }
+    }, false);
 
 </script>
 """
-# Inject the HTML/JS. height=0 hides the component frame itself.
 components.html(confetti_html, height=0, width=0)
-
 
 # ==========================================
 # 3. HAPTIC LOGIC (PYTHON SIDE)
 # ==========================================
-# Keeps the logic for the instant black screen vibration
 if st.session_state.trigger_haptic:
     js_vibration = """<script>try { window.navigator.vibrate(50); } catch(e) {}</script>"""
     components.html(js_vibration, height=0, width=0)
