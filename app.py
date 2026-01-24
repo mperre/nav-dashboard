@@ -32,6 +32,7 @@ except:
 # ==========================================
 bg_color = "#000000" if st.session_state.secure_mode else "#0d1117"
 
+# NOTE: All CSS brackets below are doubled {{ }} to prevent NameError crash
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
@@ -43,19 +44,15 @@ st.markdown(f"""
 
 /* LAYOUT: UNIFORM 10PX BORDER */
 .block-container {{
-    /* Reset defaults */
     margin: 0 !important;
+    margin-top: -55px !important; /* Hide header */
     
-    /* Pull content up to hide the white Streamlit header bar */
-    margin-top: -55px !important; 
-    
-    /* Create the exact 10px black border on Top, Left, Right */
+    /* Uniform 10px border on Top, Left, Right */
     padding-top: 10px !important;
     padding-left: 10px !important;
     padding-right: 10px !important;
     padding-bottom: 0 !important;
     
-    /* Force full viewport height */
     max-width: 100% !important;
     height: 100vh; 
     min-height: -webkit-fill-available;
@@ -67,22 +64,20 @@ st.markdown(f"""
 header, footer, [data-testid="stToolbar"] {{display: none !important;}}
 
 /* DASHBOARD CONTAINER */
-/* Fills the screen down to the button */
 .dashboard-container {{
     flex: 1; 
     width: 100%;
     display: flex;
     flex-direction: column;
     gap: 10px; 
-    padding-bottom: 80px; /* Leave space for the fixed button */
+    padding-bottom: 80px; /* Space for button */
     box-sizing: border-box;
     overflow: hidden;
 }}
 
-/* NAV BOX (Top) - EXPANDS */
-/* flex: 1 makes this box grow to fill all empty space */
+/* NAV BOX (Top) - TAKES REMAINING SPACE */
 .nav-box {{
-    flex: 1; 
+    flex: 1; /* Grows to fill space */
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -94,11 +89,10 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     min-height: 200px; 
 }}
 
-/* TRADE BOX (Bottom) - SHRINKS TO FIT */
-/* flex: 0 0 auto makes this box only as tall as its content */
+/* TRADE BOX (Bottom) - AUTO HEIGHT */
 .trade-box {{
-    flex: 0 0 auto;
-    max-height: 40vh; /* Limit height so it doesn't take over */
+    flex: 0 0 auto; /* Height determined by content */
+    max-height: 40vh; /* Max 40% of screen */
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -141,7 +135,7 @@ div.stButton > button:hover {{
     background-color: #1e272e !important;
 }}
 
-/* TYPOGRAPHY & UTILS */
+/* TYPOGRAPHY */
 .label-text {{
     font-family: 'Orbitron', sans-serif;
     font-size: 11px;
@@ -165,7 +159,6 @@ div.stButton > button:hover {{
     overflow: hidden;
 }}
 
-/* FIX: Ensure double braces here to prevent NameError */
 .nav-screen-inner {{
     flex: 1;
     width: 100%;
@@ -184,6 +177,7 @@ div.stButton > button:hover {{
     margin-top: -10px; 
 }}
 
+/* TABLE */
 .trade-table {{
     width: 100%;
     color: #dcdde1;
@@ -239,16 +233,13 @@ def get_data():
 # 4. UI RENDER
 # ==========================================
 
-# BUTTON (Positioned Fixed at Bottom)
 if st.session_state.secure_mode:
     btn_label = "👁️ ACTIVATE SYSTEM"
 else:
     btn_label = "🔒 SECURE SYSTEM"
 
-# Render the button - on_click handles the toggle reliably
 st.button(btn_label, on_click=toggle_secure)
 
-# DASHBOARD CONTENT
 if not st.session_state.secure_mode:
     acct, trades = get_data()
     nav_str = "£750" 
@@ -271,7 +262,7 @@ if not st.session_state.secure_mode:
                     if (u > 0 and tv > p) or (u < 0 and tv < p):
                         l_s, l_c = "LOCKED", "locked"
 
-            # FLUSH LEFT HTML - NO INDENTATION
+            # IMPORTANT: NO INDENTATION HERE TO PREVENT RAW TEXT RENDER
             rows += f"""<tr>
 <td class="{s_cls}">{side}</td>
 <td>{int(u)}</td>
@@ -283,7 +274,7 @@ if not st.session_state.secure_mode:
     else:
         rows = "<tr><td colspan='6' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
 
-    # FLUSH LEFT HTML
+    # IMPORTANT: NO INDENTATION HERE TO PREVENT RAW TEXT RENDER
     st.markdown(f"""
 <div class="dashboard-container">
 <div class="nav-box">
