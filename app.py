@@ -69,7 +69,7 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     box-sizing: border-box;
 }}
 
-/* NAV BOX (Top) - Flex 5 */
+/* NAV BOX (Top) - Increased Flex to 5 */
 .nav-box {{
     flex: 5; 
     background-color: #1e272e;
@@ -82,9 +82,9 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     overflow: hidden;
 }}
 
-/* TRADE BOX (Bottom) - Flex 4 */
+/* TRADE BOX (Bottom) - Decreased Flex to 3 */
 .trade-box {{
-    flex: 4; 
+    flex: 3; 
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
