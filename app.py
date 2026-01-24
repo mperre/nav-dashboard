@@ -27,8 +27,9 @@ except:
     st.stop()
 
 # ==========================================
-# 2. CSS STYLING (Standard String to avoid F-String Crashes)
+# 2. CSS STYLING
 # ==========================================
+# Standard string to prevent Python f-string syntax errors with CSS braces
 css_template = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
@@ -42,15 +43,15 @@ css_template = """
 .block-container {
     margin: 0 !important;
     
-    /* AGGRESSIVE HEADER HIDE: Pulls content up significantly */
-    margin-top: -65px !important; 
+    /* STANDARD HEADER HIDE: -50px is the standard Streamlit header height */
+    margin-top: -50px !important; 
     
     /* UNIFORM BORDERS: Exact 10px spacing on Top/Left/Right */
     padding-top: 10px !important;
     padding-left: 10px !important;
     padding-right: 10px !important;
     
-    /* Bottom padding 0 because button logic handles it */
+    /* Bottom is handled by the dashboard container to ensure relative spacing */
     padding-bottom: 0 !important;
     
     max-width: 100% !important;
@@ -64,21 +65,24 @@ css_template = """
 header, footer, [data-testid="stToolbar"] {display: none !important;}
 
 /* DASHBOARD WRAPPER */
-/* Calculates height to stop exactly 10px above the button */
-/* 100vh - 60px (Button) - 10px (Gap) = 70px subtraction */
+/* We set padding-bottom to 80px. */
+/* 70px (Button Height) + 10px (Gap) = 80px */
+/* This ensures the visual gap above the button matches the 10px gap at the top. */
 .dashboard-container {
-    height: calc(100vh - 70px);
+    flex: 1;
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 10px; /* Gap between Nav Box and Trade Box */
-    padding-bottom: 10px; /* Gap between Trade Box and Button */
+    gap: 10px; 
+    padding-bottom: 80px; 
     box-sizing: border-box;
+    overflow: hidden;
 }
 
 /* NAV BOX (TOP) - DOMINANT */
+/* flex: 1 ensures it eats all vertical space not used by the trade box */
 .nav-box {
-    flex: 1; /* Expands to fill all empty vertical space */
+    flex: 1; 
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -87,13 +91,14 @@ header, footer, [data-testid="stToolbar"] {display: none !important;}
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    min-height: 150px; 
+    min-height: 200px; 
 }
 
-/* TRADE BOX (BOTTOM) - COMPACT */
+/* TRADE BOX (BOTTOM) - CONTENT SIZED */
+/* flex: 0 0 auto means it shrinks to fit its rows */
 .trade-box {
-    flex: 0 0 auto; /* Only takes height needed for content */
-    max-height: 40vh; /* Limits growth to 40% of screen */
+    flex: 0 0 auto; 
+    max-height: 40vh; /* Prevents it from growing larger than 40% of screen */
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -123,7 +128,7 @@ div.stButton > button {
     border: none !important;
     border-top: 2px solid #485460 !important;
     font-family: 'Orbitron', sans-serif !important;
-    height: 60px !important; /* Slightly reduced height for sleeker look */
+    height: 70px !important;
     font-size: 16px !important;
     letter-spacing: 2px;
     border-radius: 0 !important;
@@ -270,7 +275,7 @@ if not st.session_state.secure_mode:
                     if (u > 0 and tv > p) or (u < 0 and tv < p):
                         l_s, l_c = "LOCKED", "locked"
 
-            # FLUSH LEFT HTML
+            # FLUSH LEFT HTML - NO INDENTATION
             rows += f"""<tr>
 <td class="{s_cls}">{side}</td>
 <td>{int(u)}</td>
