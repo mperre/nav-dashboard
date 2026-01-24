@@ -33,7 +33,7 @@ except:
     st.stop()
 
 # ==========================================
-# 2. HAPTIC FEEDBACK (JS Injection)
+# 2. HAPTIC FEEDBACK
 # ==========================================
 if st.session_state.trigger_haptic:
     js_vibration = """
@@ -50,11 +50,11 @@ if st.session_state.trigger_haptic:
 if st.session_state.secure_mode:
     dash_opacity = "0"
     dash_pointer = "none"
-    dash_transition = "opacity 0s" 
+    dash_transition = "opacity 0s"
 else:
     dash_opacity = "1"
     dash_pointer = "auto"
-    dash_transition = "opacity 0.5s ease-in" 
+    dash_transition = "opacity 0.5s ease-in"
 
 css_template = f"""
 <style>
@@ -74,7 +74,16 @@ header {{visibility: hidden !important;}}
 [data-testid="stDecoration"] {{display: none !important;}}
 [data-testid="stStatusWidget"] {{display: none !important;}}
 
-/* FULL SCREEN INTERACTION BUTTON */
+/* HIDE SCROLLBARS (Keep Sci-Fi Look) */
+::-webkit-scrollbar {{
+    display: none;
+}}
+* {{
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}}
+
+/* FULL SCREEN BUTTON */
 div.stButton > button {{
     position: fixed !important;
     top: 0 !important;
@@ -112,7 +121,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 }}
 
 .dashboard-container {{
-    /* CHANGED: Adjusted from 80px to 72px to lower the box by 8px */
     height: calc(100vh - 72px);
     width: 100%;
     display: flex;
@@ -135,8 +143,15 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     flex-direction: column;
     overflow: hidden;
 }}
+
 .nav-box {{ flex: 1; min-height: 200px; }}
-.trade-box {{ flex: 0 0 auto; max-height: 40vh; }}
+
+.trade-box {{ 
+    flex: 0 0 auto; 
+    max-height: 40vh; /* Safety Ceiling */
+    display: flex;
+    flex-direction: column;
+}}
 
 /* SCREEN */
 .screen {{
@@ -148,7 +163,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     align-items: center;
     justify-content: center;
     position: relative;
-    overflow: hidden;
     width: 100%;
     height: 100%;
 }}
@@ -274,27 +288,27 @@ else:
 
 dashboard_html = f"""
 <div class="dashboard-container">
-<div class="nav-box">
-<div class="screw tl"></div><div class="screw tr"></div>
-<div class="screw bl"></div><div class="screw br"></div>
-<div class="label-text">NAV MONITOR</div>
-<div class="screen">
-<div class="nav-value" style="font-size: {f_size};">{nav_str}</div>
-</div>
-</div>
-<div class="trade-box">
-<div class="screw tl"></div><div class="screw tr"></div>
-<div class="screw bl"></div><div class="screw br"></div>
-<div class="label-text">ACTIVE TRANSMISSIONS</div>
-<div class="screen" style="display:block; padding:0;">
-<table class="trade-table">
-<thead>
-<tr><th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th><th>TSL</th><th>LOCK</th></tr>
-</thead>
-<tbody>{rows}</tbody>
-</table>
-</div>
-</div>
+    <div class="nav-box">
+        <div class="screw tl"></div><div class="screw tr"></div>
+        <div class="screw bl"></div><div class="screw br"></div>
+        <div class="label-text">NAV MONITOR</div>
+        <div class="screen">
+            <div class="nav-value" style="font-size: {f_size};">{nav_str}</div>
+        </div>
+    </div>
+    <div class="trade-box">
+        <div class="screw tl"></div><div class="screw tr"></div>
+        <div class="screw bl"></div><div class="screw br"></div>
+        <div class="label-text">ACTIVE TRANSMISSIONS</div>
+        <div class="screen" style="display:block; padding:0; flex:1; min-height:0; overflow-y:auto;">
+            <table class="trade-table">
+                <thead>
+                    <tr><th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th><th>TSL</th><th>LOCK</th></tr>
+                </thead>
+                <tbody>{rows}</tbody>
+            </table>
+        </div>
+    </div>
 </div>
 """
 
