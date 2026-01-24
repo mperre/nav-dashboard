@@ -21,7 +21,6 @@ try:
         API_TOKEN = st.secrets["API_TOKEN"]
         ENVIRONMENT = st.secrets["ENVIRONMENT"]
     else:
-        # Fallback defaults
         ACCOUNT_ID = "000-000-0000000-000"
         API_TOKEN = "token"
         ENVIRONMENT = "practice"
@@ -29,22 +28,28 @@ except:
     st.stop()
 
 # ==========================================
-# 2. CSS STYLING
+# 2. CSS STYLING (FLICKER-PROOF)
 # ==========================================
-# Logic: We simply toggle the DISPLAY property of the black curtain div.
-curtain_display = "block" if st.session_state.secure_mode else "none"
+# Logic: We control the VISIBILITY of the dashboard container via CSS variables.
+# The HTML structure remains identical in both modes, preventing layout shifts/flickers.
+if st.session_state.secure_mode:
+    dash_opacity = "0"
+    dash_pointer = "none" # Prevent clicking hidden elements
+else:
+    dash_opacity = "1"
+    dash_pointer = "auto"
 
 css_template = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
 
-/* GLOBAL RESET */
+/* GLOBAL RESET - ALWAYS BLACK BACKGROUND */
 .stApp {{
-    background-color: #0d1117 !important;
+    background-color: #000000 !important;
 }}
 
 /* -----------------------------------------------------------
-   HIDE STREAMLIT SYSTEM UI (Footers, Headers, Toolbars)
+   HIDE STREAMLIT SYSTEM UI
 ----------------------------------------------------------- */
 #MainMenu {{visibility: hidden !important;}}
 footer {{visibility: hidden !important;}}
@@ -54,8 +59,8 @@ header {{visibility: hidden !important;}}
 [data-testid="stStatusWidget"] {{display: none !important;}}
 
 /* -----------------------------------------------------------
-   1. THE TRANSPARENT INTERACTION LAYER (BUTTON)
-   This button is ALWAYS transparent. It sits on top of everything.
+   FULL SCREEN TOGGLE BUTTON (INTERACTION LAYER)
+   Always sits on top. Always transparent.
 ----------------------------------------------------------- */
 div.stButton > button {{
     position: fixed !important;
@@ -63,10 +68,9 @@ div.stButton > button {{
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    z-index: 999999 !important; /* Topmost layer (Interaction) */
+    z-index: 999999 !important;
     
-    background-color: transparent !important; /* Always transparent */
-    
+    background-color: transparent !important;
     border: none !important;
     color: transparent !important;
     cursor: default !important; 
@@ -75,7 +79,6 @@ div.stButton > button {{
     padding: 0 !important;
 }}
 
-/* Remove hover effects */
 div.stButton > button:hover, div.stButton > button:active, div.stButton > button:focus {{
     background-color: transparent !important;
     border: none !important;
@@ -84,23 +87,8 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 }}
 
 /* -----------------------------------------------------------
-   2. THE BLACK CURTAIN (VISUAL LAYER)
-   This is a pure HTML div that sits between the dashboard and the button.
-   It doesn't flicker because it's static HTML, not a widget.
------------------------------------------------------------ */
-#black-curtain {{
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: #000000;
-    z-index: 999998; /* Below button, Above dashboard */
-    display: {curtain_display}; /* Controlled by Python */
-}}
-
-/* -----------------------------------------------------------
-   3. DASHBOARD STYLING
+   DASHBOARD CONTAINER (VISUAL LAYER)
+   We toggle opacity instead of removing the element.
 ----------------------------------------------------------- */
 .block-container {{
     margin: 0 !important;
@@ -113,7 +101,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     flex-direction: column;
 }}
 
-/* MAIN CONTAINER */
 .dashboard-container {{
     height: calc(100vh - 45px);
     width: 100%;
@@ -121,9 +108,16 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     flex-direction: column;
     gap: 15px; 
     box-sizing: border-box;
+    
+    /* FLICKER FIX: CSS TRANSITION */
+    opacity: {dash_opacity};
+    pointer-events: {dash_pointer};
+    transition: opacity 0.2s ease;
 }}
 
-/* BOX STYLES */
+/* -----------------------------------------------------------
+   COMPONENT STYLING
+----------------------------------------------------------- */
 .nav-box, .trade-box {{
     background-color: #1e272e;
     border: 3px solid #485460;
@@ -138,7 +132,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 .nav-box {{ flex: 1; min-height: 200px; }}
 .trade-box {{ flex: 0 0 auto; max-height: 40vh; }}
 
-/* SCREEN (CRT EFFECT) */
 .screen {{
     background-color: #000000;
     border: 2px solid #2d3436;
@@ -153,7 +146,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     height: 100%;
 }}
 
-/* TYPOGRAPHY */
 .label-text {{
     font-family: 'Orbitron', sans-serif;
     font-size: 12px;
@@ -174,7 +166,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     margin-top: -10px; 
 }}
 
-/* TABLE STYLING */
 .trade-table {{
     width: 100%;
     color: #dcdde1;
@@ -196,7 +187,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     text-align: center; 
 }}
 
-/* DECORATIVE SCREWS */
 .screw {{
     position: absolute; width: 6px; height: 6px;
     background: #57606f; border-radius: 50%; 
@@ -210,13 +200,8 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 st.markdown(css_template, unsafe_allow_html=True)
 
 # ==========================================
-# 3. RENDER LAYERS
+# 3. RENDER TOGGLE BUTTON (INTERACTION LAYER)
 # ==========================================
-
-# LAYER A: THE STATIC BLACK CURTAIN (Prevents Flicker)
-st.markdown('<div id="black-curtain"></div>', unsafe_allow_html=True)
-
-# LAYER B: THE INTERACTIVE BUTTON (Transparent, On Top)
 st.button(" ", on_click=toggle_secure, key="overlay_btn")
 
 # ==========================================
@@ -235,22 +220,22 @@ def get_data():
     return None, None
 
 # ==========================================
-# 5. UI RENDER
+# 5. UI RENDER (VISUAL LAYER)
 # ==========================================
+# We ALWAYS render the HTML structure. 
+# We just hide it with opacity:0 in CSS if secure_mode is True.
 acct, trades = get_data()
 
 nav_str = "£0" 
 if acct: 
     nav_str = f"£{float(acct['NAV']):,.0f}"
 
-# Dynamic Font Scaling
 char_len = len(nav_str)
 if char_len <= 4: f_size = "min(25vh, 25vw)"
 elif char_len <= 6: f_size = "min(19vh, 19vw)"
 elif char_len <= 7: f_size = "min(15vh, 15vw)"
 else: f_size = "min(12vh, 12vw)"
 
-# --- TRADES LOGIC ---
 rows = ""
 if trades:
     for t in trades:
@@ -258,12 +243,10 @@ if trades:
         entry = float(t.get('price', 0))
         pl = float(t['unrealizedPL'])
         
-        # Formatting
         side = "LONG" if u > 0 else "SHORT"
         pl_color = "#0be881" if pl >= 0 else "#ff9f43"
         dir_color = "#0be881" if u > 0 else "#ff3f34"
         
-        # TSL Logic
         tsl, l_s, l_c = "-", "WAIT", "#ff9f43"
         if 'trailingStopLossOrder' in t:
             trig = t['trailingStopLossOrder'].get('triggerPrice')
@@ -284,7 +267,6 @@ if trades:
 else:
     rows = "<tr><td colspan='6' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
 
-# --- HTML WITHOUT INDENTATION ---
 dashboard_html = f"""
 <div class="dashboard-container">
 <div class="nav-box">
