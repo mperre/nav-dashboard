@@ -7,7 +7,6 @@ import time
 # ==========================================
 st.set_page_config(page_title="COMMAND INTERFACE", layout="wide")
 
-# Initialize State
 if 'secure_mode' not in st.session_state:
     st.session_state.secure_mode = False
 
@@ -32,14 +31,14 @@ except:
 # ==========================================
 if st.session_state.secure_mode:
     # SECURE MODE (BLACK SCREEN)
-    dash_opacity = "0"          # Hide dashboard
-    dash_pointer = "none"       # Disable clicking
+    dash_opacity = "0"             # Hide dashboard
+    dash_pointer = "none"          # Disable clicking
     dash_transition = "opacity 0s" # INSTANT hide (Snap to black)
 else:
     # ACTIVE MODE (DASHBOARD VISIBLE)
-    dash_opacity = "1"          # Show dashboard
-    dash_pointer = "auto"       # Enable clicking
-    dash_transition = "opacity 1s ease-in" # SLOW reveal (1 second fade in)
+    dash_opacity = "1"             # Show dashboard
+    dash_pointer = "auto"          # Enable clicking
+    dash_transition = "opacity 0.5s ease-in" # QUICK reveal (0.5s fade in)
 
 css_template = f"""
 <style>
