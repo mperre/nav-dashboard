@@ -33,12 +33,12 @@ except:
     st.stop()
 
 # ==========================================
-# 2. JAVASCRIPT INJECTION (SWIPE DETECTION)
+# 2. JAVASCRIPT INJECTION (FIXED SWIPE)
 # ==========================================
-# We inject a script that listens for Touch Start and Touch End events to calculate swipes.
 confetti_html = """
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script>
+    // Access the main parent window
     const doc = window.parent.document;
     
     // Variables to store touch start position
@@ -47,12 +47,11 @@ confetti_html = """
 
     // CONFETTI CANNON FUNCTION
     function shootConfetti() {
-        // Haptic tap (Android only, usually ignored by iOS)
         try { window.navigator.vibrate(200); } catch(e) {}
 
         var duration = 3000;
         var animationEnd = Date.now() + duration;
-        var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 99999999 };
+        var defaults = { startVelocity: 45, spread: 360, ticks: 60, zIndex: 2147483647 };
         var randomInRange = (min, max) => Math.random() * (max - min) + min;
 
         var interval = setInterval(function() {
@@ -60,41 +59,49 @@ confetti_html = """
             if (timeLeft <= 0) { return clearInterval(interval); }
             var particleCount = 50 * (timeLeft / duration);
             
+            // Random bursts during the interval
             confetti(Object.assign({}, defaults, { 
                 particleCount, 
                 origin: { x: randomInRange(0.1, 0.9), y: Math.random() - 0.2 } 
             }));
         }, 250);
         
-        // Initial Blast
+        // Initial Big Blast from Bottom
         confetti({
-            particleCount: 150, spread: 100, origin: { y: 1 },
-            colors: ['#0be881', '#ffffff', '#57606f'],
-            startVelocity: 70, gravity: 0.8, scalar: 1.2, zIndex: 99999999
+            particleCount: 150, spread: 120, origin: { y: 1 },
+            colors: ['#0be881', '#ffffff', '#57606f'], // Theme colors
+            startVelocity: 80, gravity: 0.8, scalar: 1.2, zIndex: 2147483647
         });
     }
 
-    // LISTENER: Touch Start (Record starting X,Y)
-    doc.addEventListener('touchstart', function(e) {
+    // --- TOUCH EVENT HANDLERS ---
+    
+    function onTouchStart(e) {
+        // Record where the touch started
         touchStartX = e.changedTouches[0].screenX;
         touchStartY = e.changedTouches[0].screenY;
-    }, false);
+    }
 
-    // LISTENER: Touch End (Calculate distance and direction)
-    doc.addEventListener('touchend', function(e) {
+    function onTouchEnd(e) {
+        // Record where the touch ended
         let touchEndX = e.changedTouches[0].screenX;
         let touchEndY = e.changedTouches[0].screenY;
         
         let diffX = touchEndX - touchStartX;
         let diffY = touchEndY - touchStartY;
 
-        // Logic: 
-        // 1. Horizontal swipe must be > 50px
-        // 2. Horizontal movement must be greater than Vertical movement (to ignore scrolling)
-        if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
+        // SWIPE LOGIC:
+        // 1. Horizontal distance > 30px
+        // 2. Horizontal distance > Vertical distance (ensures it's a swipe, not a scroll)
+        if (Math.abs(diffX) > 30 && Math.abs(diffX) > Math.abs(diffY)) {
             shootConfetti();
         }
-    }, false);
+    }
+
+    // --- CRITICAL FIX: USE CAPTURE PHASE ---
+    // The 'true' at the end forces these listeners to fire BEFORE the overlay button receives the touch.
+    doc.addEventListener('touchstart', onTouchStart, true);
+    doc.addEventListener('touchend', onTouchEnd, true);
 
 </script>
 """
