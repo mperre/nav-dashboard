@@ -61,10 +61,9 @@ header, footer, [data-testid="stToolbar"] {display: none !important;}
 
 /* DASHBOARD WRAPPER */
 /* CALCULATION: */
-/* 35px (Top Gap) + 0px (Bottom Gap) + 70px (Button) = 105px total deduction */
-/* This reduces the bottom gap to near zero/flush with button */
+/* 35px (Top Padding) + 10px (Desired Bottom Gap) + 70px (Button) = 115px total deduction */
 .dashboard-container {
-    height: calc(100vh - 105px);
+    height: calc(100vh - 115px);
     width: 100%;
     display: flex;
     flex-direction: column;
