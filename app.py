@@ -43,7 +43,7 @@ css_template = """
     margin: 0 !important;
     margin-top: -55px !important; /* Hide Streamlit Header */
     
-    /* Top Padding fixed at 35px */
+    /* TOP SPACING: 35px */
     padding-top: 35px !important;
     padding-left: 10px !important;
     padding-right: 10px !important;
@@ -61,9 +61,10 @@ header, footer, [data-testid="stToolbar"] {display: none !important;}
 
 /* DASHBOARD WRAPPER */
 /* CALCULATION: */
-/* 35px (Top Padding) + 10px (Desired Bottom Gap) + 70px (Button) = 115px total deduction */
+/* 105px would be perfectly flush (35px top + 70px button). */
+/* We use 95px to extend it 10px further down (reducing the gap/creating overlap). */
 .dashboard-container {
-    height: calc(100vh - 115px);
+    height: calc(100vh - 95px);
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -234,7 +235,7 @@ def get_data():
 # 4. UI RENDER
 # ==========================================
 
-# BUTTON - PERMANENT TEXT
+# BUTTON - PERMANENT LABEL
 st.button("🔒 SECURE SYSTEM", on_click=toggle_secure)
 
 if not st.session_state.secure_mode:
