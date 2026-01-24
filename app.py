@@ -33,40 +33,120 @@ except:
     st.stop()
 
 # ==========================================
-# 2. HAPTIC FEEDBACK
+# 2. JAVASCRIPT INJECTION (CONFETTI + HAPTIC)
 # ==========================================
+# We inject a script that loads the confetti library and listens for a long-press.
+confetti_html = """
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script>
+    // Access the main parent window (the Streamlit app)
+    const doc = window.parent.document;
+    
+    let pressTimer;
+
+    // The Confetti Cannon Function
+    function shootConfetti() {
+        // Haptic vibration if supported
+        try { window.navigator.vibrate(200); } catch(e) {}
+
+        // Cannon configuration (Shoots from bottom center up)
+        var duration = 3000;
+        var animationEnd = Date.now() + duration;
+        var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 99999999 };
+
+        var randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+        var interval = setInterval(function() {
+            var timeLeft = animationEnd - Date.now();
+
+            if (timeLeft <= 0) {
+                return clearInterval(interval);
+            }
+
+            var particleCount = 50 * (timeLeft / duration);
+            
+            // Generate particles
+            confetti(Object.assign({}, defaults, { 
+                particleCount, 
+                origin: { x: randomInRange(0.1, 0.9), y: Math.random() - 0.2 } 
+            }));
+            confetti(Object.assign({}, defaults, { 
+                particleCount, 
+                origin: { x: randomInRange(0.1, 0.9), y: Math.random() - 0.2 } 
+            }));
+        }, 250);
+        
+        // Big blast at the start
+        confetti({
+            particleCount: 150,
+            spread: 100,
+            origin: { y: 1 }, // Bottom of screen
+            colors: ['#0be881', '#ffffff', '#57606f'], // Your theme colors
+            startVelocity: 70,
+            gravity: 0.8,
+            scalar: 1.2,
+            drift: 0,
+            zIndex: 99999999
+        });
+    }
+
+    // Start Timer on Mouse Down / Touch Start
+    function startPress() {
+        // Clear any existing timer just in case
+        clearTimeout(pressTimer);
+        // Set timer for 3 seconds (3000ms)
+        pressTimer = setTimeout(shootConfetti, 3000);
+    }
+
+    // Cancel Timer on Mouse Up / Touch End / Mouse Leave
+    function cancelPress() {
+        clearTimeout(pressTimer);
+    }
+
+    // Attach listeners to the parent document (the whole screen)
+    doc.addEventListener("mousedown", startPress);
+    doc.addEventListener("touchstart", startPress);
+    
+    doc.addEventListener("mouseup", cancelPress);
+    doc.addEventListener("mouseleave", cancelPress);
+    doc.addEventListener("touchend", cancelPress);
+
+</script>
+"""
+# Inject the HTML/JS. height=0 hides the component frame itself.
+components.html(confetti_html, height=0, width=0)
+
+
+# ==========================================
+# 3. HAPTIC LOGIC (PYTHON SIDE)
+# ==========================================
+# Keeps the logic for the instant black screen vibration
 if st.session_state.trigger_haptic:
-    js_vibration = """
-    <script>
-        try { window.navigator.vibrate(50); } catch(e) {}
-    </script>
-    """
+    js_vibration = """<script>try { window.navigator.vibrate(50); } catch(e) {}</script>"""
     components.html(js_vibration, height=0, width=0)
     st.session_state.trigger_haptic = False
 
 # ==========================================
-# 3. CSS STYLING
+# 4. CSS STYLING
 # ==========================================
 if st.session_state.secure_mode:
     dash_opacity = "0"
     dash_pointer = "none"
-    dash_transition = "opacity 0s"
+    dash_transition = "opacity 0s" 
 else:
     dash_opacity = "1"
     dash_pointer = "auto"
-    dash_transition = "opacity 0.5s ease-in"
+    dash_transition = "opacity 0.5s ease-in" 
 
 css_template = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
 
-/* GLOBAL RESET & SCROLL LOCK */
 .stApp {{
     background-color: #000000 !important;
     overflow: hidden !important; 
 }}
 
-/* HIDE SYSTEM UI */
 #MainMenu {{visibility: hidden !important;}}
 footer {{visibility: hidden !important;}}
 header {{visibility: hidden !important;}}
@@ -74,14 +154,8 @@ header {{visibility: hidden !important;}}
 [data-testid="stDecoration"] {{display: none !important;}}
 [data-testid="stStatusWidget"] {{display: none !important;}}
 
-/* HIDE SCROLLBARS (Keep Sci-Fi Look) */
-::-webkit-scrollbar {{
-    display: none;
-}}
-* {{
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}}
+::-webkit-scrollbar {{ display: none; }}
+* {{ -ms-overflow-style: none; scrollbar-width: none; }}
 
 /* FULL SCREEN BUTTON */
 div.stButton > button {{
@@ -107,7 +181,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     box-shadow: none !important;
 }}
 
-/* CONTAINER STYLING */
+/* CONTAINER */
 .block-container {{
     margin: 0 !important;
     margin-top: -55px !important; 
@@ -132,7 +206,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     transition: {dash_transition}; 
 }}
 
-/* COMPONENT BOXES */
+/* BOXES */
 .nav-box, .trade-box {{
     background-color: #1e272e;
     border: 3px solid #485460;
@@ -145,13 +219,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 }}
 
 .nav-box {{ flex: 1; min-height: 200px; }}
-
-.trade-box {{ 
-    flex: 0 0 auto; 
-    max-height: 40vh; /* Safety Ceiling */
-    display: flex;
-    flex-direction: column;
-}}
+.trade-box {{ flex: 0 0 auto; max-height: 40vh; display: flex; flex-direction: column; }}
 
 /* SCREEN */
 .screen {{
@@ -223,12 +291,12 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 st.markdown(css_template, unsafe_allow_html=True)
 
 # ==========================================
-# 4. TOGGLE BUTTON
+# 5. TOGGLE BUTTON
 # ==========================================
 st.button(" ", on_click=toggle_secure, key="overlay_btn")
 
 # ==========================================
-# 5. DATA ENGINE
+# 6. DATA ENGINE
 # ==========================================
 def get_data():
     base = "https://api-fxtrade.oanda.com/v3/accounts" if ENVIRONMENT == "live" else "https://api-fxpractice.oanda.com/v3/accounts"
@@ -243,7 +311,7 @@ def get_data():
     return None, None
 
 # ==========================================
-# 6. RENDER
+# 7. RENDER
 # ==========================================
 acct, trades = get_data()
 
