@@ -40,11 +40,14 @@ st.markdown(f"""
     background-color: {bg_color} !important;
 }}
 
+/* ELIMINATE TOP SPACE & CONFIGURE LAYOUT */
 .block-container {{
-    padding: 0 !important;
+    padding-top: 0rem !important;
+    padding-bottom: 0rem !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    margin-top: -40px !important; /* Pull content up aggressively */
     max-width: 100% !important;
-    margin: 0 auto;
-    /* Force container to fill screen height so flexbox works */
     height: 100vh; 
     min-height: -webkit-fill-available;
     display: flex;
@@ -54,22 +57,22 @@ st.markdown(f"""
 /* Hide standard elements */
 header, footer, [data-testid="stToolbar"] {{display: none !important;}}
 
-/* --- DASHBOARD LAYOUT (Fills space above button) --- */
+/* --- DASHBOARD CONTAINER --- */
 .dashboard-container {{
-    /* Calculate height: 100vh minus the height of the button (approx 70px) */
+    /* Height is viewport minus button height (70px) and a small buffer */
     height: calc(100vh - 70px);
     width: 100%;
-    padding: 10px 10px 0 10px; /* Top/Side padding, 0 bottom */
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Space between the two boxes */
+    padding-bottom: 10px;
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
 }}
 
-/* --- BOX STYLING --- */
+/* --- NAV BOX (Top) --- */
 .nav-box {{
-    /* This forces the top box to GROW and fill all empty space */
-    flex-grow: 1; 
+    /* Flex 1 means "take all remaining space" */
+    flex: 1; 
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -77,12 +80,15 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     position: relative;
     display: flex;
     flex-direction: column;
+    /* Ensure it doesn't get too small */
+    min-height: 150px; 
 }}
 
+/* --- TRADE BOX (Bottom) --- */
 .trade-box {{
-    /* This box only takes as much space as it needs (or a fixed height) */
-    flex-grow: 0; 
-    height: 200px; /* Fixed height for the trade window, like the original */
+    /* Flex 0 0 200px means: Don't grow, Don't shrink, Stay exactly 200px tall */
+    /* Adjust '200px' if you want it taller/shorter */
+    flex: 0 0 200px; 
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -90,19 +96,19 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     position: relative;
     display: flex;
     flex-direction: column;
+    overflow: hidden; 
 }}
 
 /* --- BUTTON STYLING (FIXED FOOTER) --- */
-/* We fix the button to the bottom to ensure it covers full width */
 div.stButton {{
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100% !important;
-    z-index: 999;
+    z-index: 9999;
     padding: 0 !important;
     margin: 0 !important;
-    background-color: #000; /* Match background behind button */
+    background-color: #000;
 }}
 
 div.stButton > button {{
@@ -112,10 +118,10 @@ div.stButton > button {{
     border: none !important;
     border-top: 2px solid #485460 !important;
     font-family: 'Orbitron', sans-serif !important;
-    height: 70px !important; /* Taller touch target */
+    height: 70px !important;
     font-size: 16px !important;
     letter-spacing: 2px;
-    border-radius: 0 !important; /* Square edges for full-width look */
+    border-radius: 0 !important;
     font-weight: 700;
     text-transform: uppercase;
 }}
@@ -125,7 +131,7 @@ div.stButton > button:hover {{
     background-color: #1e272e !important;
 }}
 
-/* --- TYPOGRAPHY & SCREENS --- */
+/* --- CONTENT STYLING --- */
 .label-text {{
     font-family: 'Orbitron', sans-serif;
     font-size: 11px;
@@ -142,7 +148,7 @@ div.stButton > button:hover {{
     border: 2px solid #2d3436;
     border-radius: 4px;
     box-shadow: inset 0 0 30px rgba(255,255,255,0.02);
-    flex: 1; /* Screens fill their parent boxes */
+    flex: 1; 
     display: flex;
     align-items: center;
     justify-content: center;
@@ -152,8 +158,7 @@ div.stButton > button:hover {{
 
 .nav-value {{
     font-family: 'Orbitron', sans-serif;
-    /* Massive responsive font that scales with height */
-    font-size: min(25vh, 25vw); 
+    font-size: min(25vh, 20vw); 
     color: #0be881;
     font-weight: 900;
     text-shadow: 0 0 20px rgba(11,232,129,0.4);
@@ -161,7 +166,6 @@ div.stButton > button:hover {{
     margin-top: -10px; 
 }}
 
-/* --- TABLE --- */
 .trade-table {{
     width: 100%;
     color: #dcdde1;
@@ -215,19 +219,18 @@ def get_data():
     return None, None
 
 # ==========================================
-# 4. RENDER UI
+# 4. UI RENDER
 # ==========================================
 
-# RENDER BUTTON (RENDERED FIRST, BUT CSS MOVES IT TO BOTTOM)
+# BUTTON (Rendered first but positioned fixed at bottom)
 if st.session_state.secure_mode:
     btn_label = "👁️ ACTIVATE SYSTEM"
 else:
     btn_label = "🔒 SECURE SYSTEM"
 
-# Render the button. It is independent of the secure mode logic below.
 st.button(btn_label, on_click=toggle_secure)
 
-# RENDER DASHBOARD CONTENT (ONLY IF NOT SECURE)
+# DASHBOARD CONTENT (Only renders if NOT secure mode)
 if not st.session_state.secure_mode:
     acct, trades = get_data()
     nav_str = "£750" 
@@ -261,32 +264,33 @@ if not st.session_state.secure_mode:
     else:
         rows = "<tr><td colspan='6' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
 
-    # HTML BLOCK (Flush Left)
+    # MAIN LAYOUT
     st.markdown(f"""
 <div class="dashboard-container">
-<div class="nav-box">
-<div class="screw tl"></div><div class="screw tr"></div>
-<div class="screw bl"></div><div class="screw br"></div>
-<div class="label-text">NAV MONITOR</div>
-<div class="screen">
-<div class="nav-value">{nav_str}</div>
-</div>
-</div>
-<div class="trade-box">
-<div class="screw tl"></div><div class="screw tr"></div>
-<div class="screw bl"></div><div class="screw br"></div>
-<div class="label-text">ACTIVE TRANSMISSIONS</div>
-<div class="screen" style="display:block; padding:0; overflow-y:auto;">
-<table class="trade-table">
-<thead>
-<tr style="background:#000;">
-<th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th><th>TSL</th><th>LOCK</th>
-</tr>
-</thead>
-<tbody>{rows}</tbody>
-</table>
-</div>
-</div>
+    <div class="nav-box">
+        <div class="screw tl"></div><div class="screw tr"></div>
+        <div class="screw bl"></div><div class="screw br"></div>
+        <div class="label-text">NAV MONITOR</div>
+        <div class="screen">
+            <div class="nav-value">{nav_str}</div>
+        </div>
+    </div>
+    
+    <div class="trade-box">
+        <div class="screw tl"></div><div class="screw tr"></div>
+        <div class="screw bl"></div><div class="screw br"></div>
+        <div class="label-text">ACTIVE TRANSMISSIONS</div>
+        <div class="screen" style="display:block; padding:0; overflow-y:auto;">
+            <table class="trade-table">
+            <thead>
+                <tr style="background:#000;">
+                    <th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th><th>TSL</th><th>LOCK</th>
+                </tr>
+            </thead>
+            <tbody>{rows}</tbody>
+            </table>
+        </div>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
