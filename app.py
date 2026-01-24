@@ -19,7 +19,6 @@ def toggle_secure():
     if st.session_state.secure_mode:
         st.session_state.trigger_haptic = True
 
-# Secrets Handling
 try:
     if "ACCOUNT_ID" in st.secrets:
         ACCOUNT_ID = st.secrets["ACCOUNT_ID"]
@@ -33,90 +32,7 @@ except:
     st.stop()
 
 # ==========================================
-# 2. JAVASCRIPT INJECTION (FIXED SWIPE)
-# ==========================================
-confetti_html = """
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-<script>
-    // Access the main parent window
-    const doc = window.parent.document;
-    
-    // Variables to store touch start position
-    let touchStartX = 0;
-    let touchStartY = 0;
-
-    // CONFETTI CANNON FUNCTION
-    function shootConfetti() {
-        try { window.navigator.vibrate(200); } catch(e) {}
-
-        var duration = 3000;
-        var animationEnd = Date.now() + duration;
-        var defaults = { startVelocity: 45, spread: 360, ticks: 60, zIndex: 2147483647 };
-        var randomInRange = (min, max) => Math.random() * (max - min) + min;
-
-        var interval = setInterval(function() {
-            var timeLeft = animationEnd - Date.now();
-            if (timeLeft <= 0) { return clearInterval(interval); }
-            var particleCount = 50 * (timeLeft / duration);
-            
-            // Random bursts during the interval
-            confetti(Object.assign({}, defaults, { 
-                particleCount, 
-                origin: { x: randomInRange(0.1, 0.9), y: Math.random() - 0.2 } 
-            }));
-        }, 250);
-        
-        // Initial Big Blast from Bottom
-        confetti({
-            particleCount: 150, spread: 120, origin: { y: 1 },
-            colors: ['#0be881', '#ffffff', '#57606f'], // Theme colors
-            startVelocity: 80, gravity: 0.8, scalar: 1.2, zIndex: 2147483647
-        });
-    }
-
-    // --- TOUCH EVENT HANDLERS ---
-    
-    function onTouchStart(e) {
-        // Record where the touch started
-        touchStartX = e.changedTouches[0].screenX;
-        touchStartY = e.changedTouches[0].screenY;
-    }
-
-    function onTouchEnd(e) {
-        // Record where the touch ended
-        let touchEndX = e.changedTouches[0].screenX;
-        let touchEndY = e.changedTouches[0].screenY;
-        
-        let diffX = touchEndX - touchStartX;
-        let diffY = touchEndY - touchStartY;
-
-        // SWIPE LOGIC:
-        // 1. Horizontal distance > 30px
-        // 2. Horizontal distance > Vertical distance (ensures it's a swipe, not a scroll)
-        if (Math.abs(diffX) > 30 && Math.abs(diffX) > Math.abs(diffY)) {
-            shootConfetti();
-        }
-    }
-
-    // --- CRITICAL FIX: USE CAPTURE PHASE ---
-    // The 'true' at the end forces these listeners to fire BEFORE the overlay button receives the touch.
-    doc.addEventListener('touchstart', onTouchStart, true);
-    doc.addEventListener('touchend', onTouchEnd, true);
-
-</script>
-"""
-components.html(confetti_html, height=0, width=0)
-
-# ==========================================
-# 3. HAPTIC LOGIC (PYTHON SIDE)
-# ==========================================
-if st.session_state.trigger_haptic:
-    js_vibration = """<script>try { window.navigator.vibrate(50); } catch(e) {}</script>"""
-    components.html(js_vibration, height=0, width=0)
-    st.session_state.trigger_haptic = False
-
-# ==========================================
-# 4. CSS STYLING
+# 2. CSS STYLING (CRITICAL FIXES)
 # ==========================================
 if st.session_state.secure_mode:
     dash_opacity = "0"
@@ -131,29 +47,42 @@ css_template = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
 
+/* GLOBAL SETTINGS */
 .stApp {{
     background-color: #000000 !important;
     overflow: hidden !important; 
 }}
 
-#MainMenu {{visibility: hidden !important;}}
-footer {{visibility: hidden !important;}}
-header {{visibility: hidden !important;}}
-[data-testid="stToolbar"] {{display: none !important;}}
-[data-testid="stDecoration"] {{display: none !important;}}
-[data-testid="stStatusWidget"] {{display: none !important;}}
+#MainMenu, footer, header {{visibility: hidden !important;}}
+[data-testid="stToolbar"], [data-testid="stDecoration"], [data-testid="stStatusWidget"] {{display: none !important;}}
 
 ::-webkit-scrollbar {{ display: none; }}
 * {{ -ms-overflow-style: none; scrollbar-width: none; }}
 
-/* FULL SCREEN BUTTON */
+/* -----------------------------------------------------------
+   CRITICAL FIX: MAKE THE CONFETTI IFRAME FULL SCREEN
+   Streamlit components render in iframes. We must force them 
+   to sit on top of everything but ignore clicks (pointer-events: none)
+----------------------------------------------------------- */
+iframe {{
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 2147483647 !important; /* Highest possible Z-Index */
+    pointer-events: none !important; /* Let clicks pass through to the button */
+    background: transparent !important;
+}}
+
+/* FULL SCREEN INTERACTION BUTTON */
 div.stButton > button {{
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    z-index: 999999 !important;
+    z-index: 999999 !important; /* Below confetti, Above dashboard */
     background-color: transparent !important;
     border: none !important;
     color: transparent !important;
@@ -161,7 +90,6 @@ div.stButton > button {{
     border-radius: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
-    outline: none !important;
 }}
 div.stButton > button:hover, div.stButton > button:active, div.stButton > button:focus {{
     background-color: transparent !important;
@@ -170,7 +98,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     box-shadow: none !important;
 }}
 
-/* CONTAINER */
+/* DASHBOARD CONTAINER */
 .block-container {{
     margin: 0 !important;
     margin-top: -55px !important; 
@@ -195,7 +123,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     transition: {dash_transition}; 
 }}
 
-/* BOXES */
+/* COMPONENT BOXES */
 .nav-box, .trade-box {{
     background-color: #1e272e;
     border: 3px solid #485460;
@@ -210,7 +138,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 .nav-box {{ flex: 1; min-height: 200px; }}
 .trade-box {{ flex: 0 0 auto; max-height: 40vh; display: flex; flex-direction: column; }}
 
-/* SCREEN */
+/* SCREEN & TEXT */
 .screen {{
     background-color: #000000;
     border: 2px solid #2d3436;
@@ -223,61 +151,93 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     width: 100%;
     height: 100%;
 }}
-
-/* TEXT */
-.label-text {{
-    font-family: 'Orbitron', sans-serif;
-    font-size: 12px;
-    color: #808e9b;
-    font-weight: 800;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-    text-transform: uppercase;
-    padding-left: 4px;
-}}
-.nav-value {{
-    font-family: 'Orbitron', sans-serif;
-    color: #0be881;
-    font-weight: 900;
-    text-shadow: 0 0 20px rgba(11,232,129,0.4);
-    line-height: 1;
-    margin-top: -10px; 
-}}
+.label-text {{ font-family: 'Orbitron'; font-size: 12px; color: #808e9b; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; padding-left: 4px; }}
+.nav-value {{ font-family: 'Orbitron'; color: #0be881; font-weight: 900; line-height: 1; margin-top: -10px; }}
 
 /* TABLE */
-.trade-table {{
-    width: 100%;
-    color: #dcdde1;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 11px;
-    border-collapse: collapse;
-}}
-.trade-table th {{ 
-    border-bottom: 1px solid #485460; 
-    padding: 8px 2px; 
-    color: #808e9b; 
-    text-align: center;
-    background: #050505;
-    position: sticky; top: 0;
-}}
-.trade-table td {{ 
-    border-bottom: 1px solid #2d3436; 
-    padding: 10px 2px; 
-    text-align: center; 
-}}
+.trade-table {{ width: 100%; color: #dcdde1; font-family: 'Orbitron'; font-size: 11px; border-collapse: collapse; }}
+.trade-table th {{ border-bottom: 1px solid #485460; padding: 8px 2px; color: #808e9b; text-align: center; background: #050505; position: sticky; top: 0; }}
+.trade-table td {{ border-bottom: 1px solid #2d3436; padding: 10px 2px; text-align: center; }}
 
 /* SCREWS */
-.screw {{
-    position: absolute; width: 6px; height: 6px;
-    background: #57606f; border-radius: 50%; 
-    border: 1px solid #2f3640;
-    z-index: 5;
-}}
-.tl {{top:6px; left:6px;}} .tr {{top:6px; right:6px;}}
-.bl {{bottom:6px; left:6px;}} .br {{bottom:6px; right:6px;}}
+.screw {{ position: absolute; width: 6px; height: 6px; background: #57606f; border-radius: 50%; border: 1px solid #2f3640; z-index: 5; }}
+.tl {{top:6px; left:6px;}} .tr {{top:6px; right:6px;}} .bl {{bottom:6px; left:6px;}} .br {{bottom:6px; right:6px;}}
 </style>
 """
 st.markdown(css_template, unsafe_allow_html=True)
+
+# ==========================================
+# 3. JAVASCRIPT INJECTION (CONFETTI)
+# ==========================================
+# Note: We set height=1000 temporarily to ensure the iframe is rendered, 
+# but CSS above forces it to 100vh fixed.
+confetti_html = """
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script>
+    const doc = window.parent.document;
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    function shootConfetti() {
+        try { window.navigator.vibrate(200); } catch(e) {}
+        
+        var duration = 3000;
+        var animationEnd = Date.now() + duration;
+        var defaults = { startVelocity: 45, spread: 360, ticks: 60, zIndex: 2147483647 };
+        var randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+        var interval = setInterval(function() {
+            var timeLeft = animationEnd - Date.now();
+            if (timeLeft <= 0) { return clearInterval(interval); }
+            var particleCount = 50 * (timeLeft / duration);
+            confetti(Object.assign({}, defaults, { 
+                particleCount, 
+                origin: { x: randomInRange(0.1, 0.9), y: Math.random() - 0.2 } 
+            }));
+        }, 250);
+        
+        // BLAST
+        confetti({
+            particleCount: 150, spread: 120, origin: { y: 1 },
+            colors: ['#0be881', '#ffffff', '#57606f'],
+            startVelocity: 85, gravity: 0.8, scalar: 1.2, zIndex: 2147483647
+        });
+    }
+
+    function onTouchStart(e) {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+    }
+
+    function onTouchEnd(e) {
+        let touchEndX = e.changedTouches[0].screenX;
+        let touchEndY = e.changedTouches[0].screenY;
+        let diffX = touchEndX - touchStartX;
+        let diffY = touchEndY - touchStartY;
+
+        // SWIPE THRESHOLD: > 30px horizontal
+        if (Math.abs(diffX) > 30 && Math.abs(diffX) > Math.abs(diffY)) {
+            shootConfetti();
+        }
+    }
+
+    // Capture Phase Listeners (True)
+    doc.addEventListener('touchstart', onTouchStart, true);
+    doc.addEventListener('touchend', onTouchEnd, true);
+    
+    // Test fire on load to confirm it works (Remove if annoying)
+    // setTimeout(shootConfetti, 1000); 
+</script>
+"""
+components.html(confetti_html, height=100) # Height ensures iframe exists
+
+# ==========================================
+# 4. HAPTIC LOGIC
+# ==========================================
+if st.session_state.trigger_haptic:
+    js_vibration = """<script>try { window.navigator.vibrate(50); } catch(e) {}</script>"""
+    components.html(js_vibration, height=0)
+    st.session_state.trigger_haptic = False
 
 # ==========================================
 # 5. TOGGLE BUTTON
