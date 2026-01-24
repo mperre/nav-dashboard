@@ -29,25 +29,24 @@ except:
 # ==========================================
 # 2. CSS STYLING
 # ==========================================
-# Logic: If Secure Mode -> Pure Black (#000000), Else -> Dark Blue-Grey (#0d1117)
 bg_color = "#000000" if st.session_state.secure_mode else "#0d1117"
 
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
 
-/* --- GLOBAL RESET --- */
+/* GLOBAL RESET */
 .stApp {{
     background-color: {bg_color} !important;
 }}
 
-/* LAYOUT FIX: Remove default padding & negative margin to pull content to top */
+/* LAYOUT: Remove padding/margins to fill screen */
 .block-container {{
     padding-top: 0 !important;
     padding-bottom: 0 !important;
     padding-left: 0.5rem !important;
     padding-right: 0.5rem !important;
-    margin-top: -60px !important; /* Pulls content up to cover header space */
+    margin-top: -60px !important; 
     max-width: 100% !important;
     height: 100vh; 
     min-height: -webkit-fill-available;
@@ -58,9 +57,8 @@ st.markdown(f"""
 /* Hide standard elements */
 header, footer, [data-testid="stToolbar"] {{display: none !important;}}
 
-/* --- DASHBOARD CONTAINER --- */
+/* DASHBOARD CONTAINER */
 .dashboard-container {{
-    /* Fill height minus button (70px) */
     height: calc(100vh - 70px);
     width: 100%;
     display: flex;
@@ -71,9 +69,9 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     box-sizing: border-box;
 }}
 
-/* --- NAV BOX (Top) --- */
+/* NAV BOX (Top) - Flex 5 */
 .nav-box {{
-    flex: 5; /* Takes 5/9 of space */
+    flex: 5; 
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -84,9 +82,9 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     overflow: hidden;
 }}
 
-/* --- TRADE BOX (Bottom) --- */
+/* TRADE BOX (Bottom) - Flex 4 */
 .trade-box {{
-    flex: 4; /* Takes 4/9 of space */
+    flex: 4; 
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -97,7 +95,7 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     overflow: hidden; 
 }}
 
-/* --- BUTTON STYLING (FIXED FOOTER) --- */
+/* BUTTON STYLING (FIXED FOOTER) */
 div.stButton {{
     position: fixed;
     bottom: 0;
@@ -129,7 +127,7 @@ div.stButton > button:hover {{
     background-color: #1e272e !important;
 }}
 
-/* --- CONTENT STYLING --- */
+/* TYPOGRAPHY & UTILS */
 .label-text {{
     font-family: 'Orbitron', sans-serif;
     font-size: 11px;
@@ -185,7 +183,6 @@ div.stButton > button:hover {{
     text-align: center; 
 }}
 
-/* --- VISUALS --- */
 .screw {{
     position: absolute; width: 6px; height: 6px;
     background: #57606f; border-radius: 50%; 
@@ -220,17 +217,18 @@ def get_data():
 # 4. UI RENDER
 # ==========================================
 
-# BUTTON (Rendered first but positioned fixed at bottom)
+# BUTTON (Positioned Fixed at Bottom)
 if st.session_state.secure_mode:
     btn_label = "👁️ ACTIVATE SYSTEM"
 else:
     btn_label = "🔒 SECURE SYSTEM"
 
+# Render the button - on_click handles the toggle reliably
 st.button(btn_label, on_click=toggle_secure)
 
 # DASHBOARD CONTENT
-# If secure_mode is True, we skip this entire block.
-# CSS background handles the black screen.
+# If SECURE: We do NOT render any HTML, ensuring a totally black screen.
+# If ACTIVE: We fetch data, render HTML, and enable auto-refresh.
 if not st.session_state.secure_mode:
     acct, trades = get_data()
     nav_str = "£750" 
@@ -253,7 +251,7 @@ if not st.session_state.secure_mode:
                     if (u > 0 and tv > p) or (u < 0 and tv < p):
                         l_s, l_c = "LOCKED", "locked"
 
-            # WARNING: NO INDENTATION ALLOWED IN THIS STRING
+            # CRITICAL: FLUSH LEFT HTML - NO INDENTATION
             rows += f"""<tr>
 <td class="{s_cls}">{side}</td>
 <td>{int(u)}</td>
@@ -265,7 +263,7 @@ if not st.session_state.secure_mode:
     else:
         rows = "<tr><td colspan='6' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
 
-    # MAIN LAYOUT - FLUSH LEFT TO PREVENT RAW TEXT BUG
+    # CRITICAL: FLUSH LEFT HTML - NO INDENTATION
     st.markdown(f"""
 <div class="dashboard-container">
 <div class="nav-box">
@@ -294,6 +292,7 @@ if not st.session_state.secure_mode:
 </div>
 """, unsafe_allow_html=True)
 
-# AUTO REFRESH
-time.sleep(2)
-st.rerun()
+    # LOOP: Only run the refresh loop if we are NOT in secure mode.
+    # This fixes the "cycling" issue.
+    time.sleep(2)
+    st.rerun()
