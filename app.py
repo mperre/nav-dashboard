@@ -28,16 +28,18 @@ except:
     st.stop()
 
 # ==========================================
-# 2. CSS STYLING (FLICKER-PROOF)
+# 2. CSS STYLING (DYNAMIC TRANSITIONS)
 # ==========================================
-# Logic: We control the VISIBILITY of the dashboard container via CSS variables.
-# The HTML structure remains identical in both modes, preventing layout shifts/flickers.
 if st.session_state.secure_mode:
-    dash_opacity = "0"
-    dash_pointer = "none" # Prevent clicking hidden elements
+    # SECURE MODE (BLACK SCREEN)
+    dash_opacity = "0"          # Hide dashboard
+    dash_pointer = "none"       # Disable clicking
+    dash_transition = "opacity 0s" # INSTANT hide (Snap to black)
 else:
-    dash_opacity = "1"
-    dash_pointer = "auto"
+    # ACTIVE MODE (DASHBOARD VISIBLE)
+    dash_opacity = "1"          # Show dashboard
+    dash_pointer = "auto"       # Enable clicking
+    dash_transition = "opacity 1s ease-in" # SLOW reveal (1 second fade in)
 
 css_template = f"""
 <style>
@@ -60,7 +62,6 @@ header {{visibility: hidden !important;}}
 
 /* -----------------------------------------------------------
    FULL SCREEN TOGGLE BUTTON (INTERACTION LAYER)
-   Always sits on top. Always transparent.
 ----------------------------------------------------------- */
 div.stButton > button {{
     position: fixed !important;
@@ -88,7 +89,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 
 /* -----------------------------------------------------------
    DASHBOARD CONTAINER (VISUAL LAYER)
-   We toggle opacity instead of removing the element.
 ----------------------------------------------------------- */
 .block-container {{
     margin: 0 !important;
@@ -109,10 +109,10 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     gap: 15px; 
     box-sizing: border-box;
     
-    /* FLICKER FIX: CSS TRANSITION */
+    /* DYNAMIC TRANSITION LOGIC */
     opacity: {dash_opacity};
     pointer-events: {dash_pointer};
-    transition: opacity 0.2s ease;
+    transition: {dash_transition}; 
 }}
 
 /* -----------------------------------------------------------
@@ -200,7 +200,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 st.markdown(css_template, unsafe_allow_html=True)
 
 # ==========================================
-# 3. RENDER TOGGLE BUTTON (INTERACTION LAYER)
+# 3. RENDER TOGGLE BUTTON
 # ==========================================
 st.button(" ", on_click=toggle_secure, key="overlay_btn")
 
@@ -220,10 +220,8 @@ def get_data():
     return None, None
 
 # ==========================================
-# 5. UI RENDER (VISUAL LAYER)
+# 5. UI RENDER
 # ==========================================
-# We ALWAYS render the HTML structure. 
-# We just hide it with opacity:0 in CSS if secure_mode is True.
 acct, trades = get_data()
 
 nav_str = "£0" 
