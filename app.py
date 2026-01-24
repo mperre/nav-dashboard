@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components # Required for JS injection
 import requests
 import time
 
@@ -10,8 +11,17 @@ st.set_page_config(page_title="COMMAND INTERFACE", layout="wide")
 if 'secure_mode' not in st.session_state:
     st.session_state.secure_mode = False
 
+# New State Variable to track if we need to vibrate
+if 'trigger_haptic' not in st.session_state:
+    st.session_state.trigger_haptic = False
+
 def toggle_secure():
+    # Toggle the mode
     st.session_state.secure_mode = not st.session_state.secure_mode
+    
+    # If we just turned ON secure mode (screen goes black), trigger the haptic
+    if st.session_state.secure_mode:
+        st.session_state.trigger_haptic = True
 
 # Secrets Handling
 try:
@@ -27,31 +37,48 @@ except:
     st.stop()
 
 # ==========================================
-# 2. CSS STYLING (DYNAMIC TRANSITIONS)
+# 2. HAPTIC FEEDBACK INJECTION
+# ==========================================
+# This runs JavaScript only when the 'trigger_haptic' flag is True
+if st.session_state.trigger_haptic:
+    # Attempt to vibrate the device for 50ms (Short haptic tap)
+    # Note: iOS usually blocks this, but Android allows it.
+    js_vibration = """
+    <script>
+        try {
+            window.navigator.vibrate(50);
+        } catch(e) {
+            console.log("Haptic not supported");
+        }
+    </script>
+    """
+    components.html(js_vibration, height=0, width=0)
+    
+    # Reset the trigger so it doesn't vibrate constantly
+    st.session_state.trigger_haptic = False
+
+# ==========================================
+# 3. CSS STYLING
 # ==========================================
 if st.session_state.secure_mode:
-    # SECURE MODE (BLACK SCREEN)
-    dash_opacity = "0"             # Hide dashboard
-    dash_pointer = "none"          # Disable clicking
-    dash_transition = "opacity 0s" # INSTANT hide (Snap to black)
+    dash_opacity = "0"             
+    dash_pointer = "none"          
+    dash_transition = "opacity 0s" # INSTANT BLACK
 else:
-    # ACTIVE MODE (DASHBOARD VISIBLE)
-    dash_opacity = "1"             # Show dashboard
-    dash_pointer = "auto"          # Enable clicking
-    dash_transition = "opacity 0.5s ease-in" # QUICK reveal (0.5s fade in)
+    dash_opacity = "1"             
+    dash_pointer = "auto"          
+    dash_transition = "opacity 0.5s ease-in" # FADE IN REVEAL
 
 css_template = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
 
-/* GLOBAL RESET - ALWAYS BLACK BACKGROUND */
+/* GLOBAL RESET */
 .stApp {{
     background-color: #000000 !important;
 }}
 
-/* -----------------------------------------------------------
-   HIDE STREAMLIT SYSTEM UI
------------------------------------------------------------ */
+/* HIDE SYSTEM UI */
 #MainMenu {{visibility: hidden !important;}}
 footer {{visibility: hidden !important;}}
 header {{visibility: hidden !important;}}
@@ -59,9 +86,7 @@ header {{visibility: hidden !important;}}
 [data-testid="stDecoration"] {{display: none !important;}}
 [data-testid="stStatusWidget"] {{display: none !important;}}
 
-/* -----------------------------------------------------------
-   FULL SCREEN TOGGLE BUTTON (INTERACTION LAYER)
------------------------------------------------------------ */
+/* FULL SCREEN BUTTON */
 div.stButton > button {{
     position: fixed !important;
     top: 0 !important;
@@ -69,7 +94,6 @@ div.stButton > button {{
     width: 100vw !important;
     height: 100vh !important;
     z-index: 999999 !important;
-    
     background-color: transparent !important;
     border: none !important;
     color: transparent !important;
@@ -78,7 +102,6 @@ div.stButton > button {{
     margin: 0 !important;
     padding: 0 !important;
 }}
-
 div.stButton > button:hover, div.stButton > button:active, div.stButton > button:focus {{
     background-color: transparent !important;
     border: none !important;
@@ -86,9 +109,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     box-shadow: none !important;
 }}
 
-/* -----------------------------------------------------------
-   DASHBOARD CONTAINER (VISUAL LAYER)
------------------------------------------------------------ */
+/* DASHBOARD CONTAINER */
 .block-container {{
     margin: 0 !important;
     margin-top: -55px !important; 
@@ -107,16 +128,12 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     flex-direction: column;
     gap: 15px; 
     box-sizing: border-box;
-    
-    /* DYNAMIC TRANSITION LOGIC */
     opacity: {dash_opacity};
     pointer-events: {dash_pointer};
     transition: {dash_transition}; 
 }}
 
-/* -----------------------------------------------------------
-   COMPONENT STYLING
------------------------------------------------------------ */
+/* BOX STYLES */
 .nav-box, .trade-box {{
     background-color: #1e272e;
     border: 3px solid #485460;
@@ -127,10 +144,10 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     flex-direction: column;
     overflow: hidden;
 }}
-
 .nav-box {{ flex: 1; min-height: 200px; }}
 .trade-box {{ flex: 0 0 auto; max-height: 40vh; }}
 
+/* SCREEN STYLES */
 .screen {{
     background-color: #000000;
     border: 2px solid #2d3436;
@@ -145,6 +162,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     height: 100%;
 }}
 
+/* TEXT STYLES */
 .label-text {{
     font-family: 'Orbitron', sans-serif;
     font-size: 12px;
@@ -155,7 +173,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     text-transform: uppercase;
     padding-left: 4px;
 }}
-
 .nav-value {{
     font-family: 'Orbitron', sans-serif;
     color: #0be881;
@@ -164,7 +181,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     line-height: 1;
     margin-top: -10px; 
 }}
-
 .trade-table {{
     width: 100%;
     color: #dcdde1;
@@ -186,6 +202,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     text-align: center; 
 }}
 
+/* SCREWS */
 .screw {{
     position: absolute; width: 6px; height: 6px;
     background: #57606f; border-radius: 50%; 
@@ -199,12 +216,12 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 st.markdown(css_template, unsafe_allow_html=True)
 
 # ==========================================
-# 3. RENDER TOGGLE BUTTON
+# 4. RENDER TOGGLE BUTTON
 # ==========================================
 st.button(" ", on_click=toggle_secure, key="overlay_btn")
 
 # ==========================================
-# 4. DATA ENGINE
+# 5. DATA ENGINE
 # ==========================================
 def get_data():
     base = "https://api-fxtrade.oanda.com/v3/accounts" if ENVIRONMENT == "live" else "https://api-fxpractice.oanda.com/v3/accounts"
@@ -219,7 +236,7 @@ def get_data():
     return None, None
 
 # ==========================================
-# 5. UI RENDER
+# 6. UI RENDER
 # ==========================================
 acct, trades = get_data()
 
@@ -239,11 +256,9 @@ if trades:
         u = float(t['currentUnits'])
         entry = float(t.get('price', 0))
         pl = float(t['unrealizedPL'])
-        
         side = "LONG" if u > 0 else "SHORT"
         pl_color = "#0be881" if pl >= 0 else "#ff9f43"
         dir_color = "#0be881" if u > 0 else "#ff3f34"
-        
         tsl, l_s, l_c = "-", "WAIT", "#ff9f43"
         if 'trailingStopLossOrder' in t:
             trig = t['trailingStopLossOrder'].get('triggerPrice')
