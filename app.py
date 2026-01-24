@@ -20,7 +20,6 @@ try:
         API_TOKEN = st.secrets["API_TOKEN"]
         ENVIRONMENT = st.secrets["ENVIRONMENT"]
     else:
-        # Fallback for demo
         ACCOUNT_ID = "000-000-0000000-000"
         API_TOKEN = "token"
         ENVIRONMENT = "practice"
@@ -32,18 +31,18 @@ except:
 # ==========================================
 bg_color = "#000000" if st.session_state.secure_mode else "#0d1117"
 
-# NOTE: ALL BRACES ARE DOUBLED {{ }} TO PREVENT PYTHON ERRORS
-st.markdown(f"""
+# WE USE A STANDARD STRING + REPLACE TO PREVENT PYTHON f-STRING CRASHES
+css_template = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
 
 /* GLOBAL RESET */
-.stApp {{
-    background-color: {bg_color} !important;
-}}
+.stApp {
+    background-color: BG_COLOR_PLACEHOLDER !important;
+}
 
 /* LAYOUT: UNIFORM 10PX BORDER (TOP/LEFT/RIGHT) */
-.block-container {{
+.block-container {
     margin: 0 !important;
     margin-top: -55px !important; /* Hide Streamlit Header */
     
@@ -58,13 +57,13 @@ st.markdown(f"""
     min-height: -webkit-fill-available;
     display: flex;
     flex-direction: column;
-}}
+}
 
 /* Hide standard elements */
-header, footer, [data-testid="stToolbar"] {{display: none !important;}}
+header, footer, [data-testid="stToolbar"] {display: none !important;}
 
 /* DASHBOARD CONTAINER */
-.dashboard-container {{
+.dashboard-container {
     flex: 1; 
     width: 100%;
     display: flex;
@@ -73,10 +72,10 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     padding-bottom: 80px; /* Space for fixed button */
     box-sizing: border-box;
     overflow: hidden;
-}}
+}
 
 /* NAV BOX (Top) - EXPANDS TO FILL SPACE */
-.nav-box {{
+.nav-box {
     flex: 1; 
     background-color: #1e272e;
     border: 3px solid #485460;
@@ -87,10 +86,10 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     flex-direction: column;
     overflow: hidden;
     min-height: 200px; 
-}}
+}
 
 /* TRADE BOX (Bottom) - SHRINKS TO CONTENT */
-.trade-box {{
+.trade-box {
     flex: 0 0 auto;
     max-height: 40vh; 
     background-color: #1e272e;
@@ -101,10 +100,10 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     display: flex;
     flex-direction: column;
     overflow-y: auto; 
-}}
+}
 
 /* BUTTON STYLING (FIXED FOOTER) */
-div.stButton {{
+div.stButton {
     position: fixed;
     bottom: 0;
     left: 0;
@@ -112,10 +111,10 @@ div.stButton {{
     z-index: 9999;
     padding: 0 !important;
     margin: 0 !important;
-    background-color: {bg_color};
-}}
+    background-color: BG_COLOR_PLACEHOLDER;
+}
 
-div.stButton > button {{
+div.stButton > button {
     width: 100% !important;
     background-color: #2f3640 !important;
     color: #808e9b !important;
@@ -128,15 +127,15 @@ div.stButton > button {{
     border-radius: 0 !important;
     font-weight: 700;
     text-transform: uppercase;
-}}
+}
 
-div.stButton > button:hover {{
+div.stButton > button:hover {
     color: #0be881 !important;
     background-color: #1e272e !important;
-}}
+}
 
 /* TYPOGRAPHY */
-.label-text {{
+.label-text {
     font-family: 'Orbitron', sans-serif;
     font-size: 11px;
     color: #808e9b;
@@ -145,9 +144,9 @@ div.stButton > button:hover {{
     margin-bottom: 6px;
     text-transform: uppercase;
     padding-left: 4px;
-}}
+}
 
-.screen {{
+.screen {
     background-color: #000000;
     border: 2px solid #2d3436;
     border-radius: 4px;
@@ -157,17 +156,17 @@ div.stButton > button:hover {{
     justify-content: center;
     position: relative;
     overflow: hidden;
-}}
+}
 
-.nav-screen-inner {{
+.nav-screen-inner {
     flex: 1;
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-}}
+}
 
-.nav-value {{
+.nav-value {
     font-family: 'Orbitron', sans-serif;
     font-size: min(25vh, 25vw); 
     color: #0be881;
@@ -175,44 +174,47 @@ div.stButton > button:hover {{
     text-shadow: 0 0 20px rgba(11,232,129,0.4);
     line-height: 1;
     margin-top: -10px; 
-}}
+}
 
 /* TABLE */
-.trade-table {{
+.trade-table {
     width: 100%;
     color: #dcdde1;
     font-family: 'Orbitron', sans-serif;
     font-size: 11px;
     border-collapse: collapse;
-}}
-.trade-table th {{ 
+}
+.trade-table th { 
     border-bottom: 1px solid #485460; 
     padding: 8px 2px; 
     color: #808e9b; 
     text-align: center;
     background: #050505;
     position: sticky; top: 0;
-}}
-.trade-table td {{ 
+}
+.trade-table td { 
     border-bottom: 1px solid #2d3436; 
     padding: 10px 2px; 
     text-align: center; 
-}}
+}
 
-.screw {{
+.screw {
     position: absolute; width: 6px; height: 6px;
     background: #57606f; border-radius: 50%; 
     border: 1px solid #2f3640;
     z-index: 5;
-}}
-.tl {{top:6px; left:6px;}} .tr {{top:6px; right:6px;}}
-.bl {{bottom:6px; left:6px;}} .br {{bottom:6px; right:6px;}}
+}
+.tl {top:6px; left:6px;} .tr {top:6px; right:6px;}
+.bl {bottom:6px; left:6px;} .br {bottom:6px; right:6px;}
 
-.long {{ color: #0be881; }} .short {{ color: #ff3f34; }}
-.locked {{ color: #0be881; font-weight: bold; }}
-.wait {{ color: #ff9f43; }}
+.long { color: #0be881; } .short { color: #ff3f34; }
+.locked { color: #0be881; font-weight: bold; }
+.wait { color: #ff9f43; }
 </style>
-""", unsafe_allow_html=True)
+"""
+
+# Inject the background color safely
+st.markdown(css_template.replace("BG_COLOR_PLACEHOLDER", bg_color), unsafe_allow_html=True)
 
 # ==========================================
 # 3. DATA & LOGIC
@@ -264,6 +266,7 @@ if not st.session_state.secure_mode:
                     if (u > 0 and tv > p) or (u < 0 and tv < p):
                         l_s, l_c = "LOCKED", "locked"
 
+            # FLUSH LEFT HTML - NO INDENTATION
             rows += f"""<tr>
 <td class="{s_cls}">{side}</td>
 <td>{int(u)}</td>
