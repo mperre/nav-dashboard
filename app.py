@@ -40,15 +40,13 @@ st.markdown(f"""
     background-color: {bg_color} !important;
 }}
 
-/* LAYOUT FIX: UNIFORM BORDER */
-/* We set padding to 10px on all sides (Top, Left, Right). */
-/* This creates the symmetrical black frame you requested. */
+/* LAYOUT: TIGHTEN TOP GAP */
+/* margin-top: -35px pulls standard Streamlit padding up significantly. */
+/* padding: 5px creates a thin, uniform black border around the whole app. */
 .block-container {{
-    padding-top: 10px !important;    /* Small gap at top */
-    padding-left: 10px !important;   /* Matching gap at left */
-    padding-right: 10px !important;  /* Matching gap at right */
-    padding-bottom: 0 !important;
+    padding: 5px !important;
     margin: 0 !important;
+    margin-top: -35px !important; 
     max-width: 100% !important;
     height: 100vh; 
     min-height: -webkit-fill-available;
@@ -60,34 +58,20 @@ st.markdown(f"""
 header, footer, [data-testid="stToolbar"] {{display: none !important;}}
 
 /* DASHBOARD CONTAINER */
-/* Force height to fill screen down to the button (100vh - 70px) */
-/* This eliminates the big black void at the bottom */
+/* Height = Viewport - Button (70px) - Padding adjustments */
 .dashboard-container {{
-    height: calc(100vh - 80px); /* 100vh - Button(70) - TopPad(10) */
+    height: calc(100vh - 80px); 
     width: 100%;
     display: flex;
     flex-direction: column;
     gap: 10px; 
     box-sizing: border-box;
+    padding-bottom: 10px;
 }}
 
-/* NAV BOX (Top) - Flex 1.2 */
-/* Takes slightly more than half the space */
+/* NAV BOX (Top) - DOMINANT */
+/* flex: 1 means "Fill all available space left over by the bottom box" */
 .nav-box {{
-    flex: 1.2; 
-    background-color: #1e272e;
-    border: 3px solid #485460;
-    border-radius: 6px;
-    padding: 10px;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}}
-
-/* TRADE BOX (Bottom) - Flex 1 */
-/* Takes the remaining space, stretching to the button */
-.trade-box {{
     flex: 1; 
     background-color: #1e272e;
     border: 3px solid #485460;
@@ -96,7 +80,25 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     position: relative;
     display: flex;
     flex-direction: column;
-    overflow: hidden; 
+    overflow: hidden;
+    min-height: 200px; /* Ensure it never collapses too much */
+}}
+
+/* TRADE BOX (Bottom) - DYNAMIC */
+/* flex: 0 0 auto means "Size exactly to fit content". */
+/* max-height: 40vh prevents it from ever taking more than 40% of screen. */
+.trade-box {{
+    flex: 0 0 auto; 
+    height: auto;
+    max-height: 40vh;
+    background-color: #1e272e;
+    border: 3px solid #485460;
+    border-radius: 6px;
+    padding: 10px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto; /* Scroll if list gets very long */
 }}
 
 /* BUTTON STYLING (FIXED FOOTER) */
@@ -148,13 +150,18 @@ div.stButton > button:hover {{
     border: 2px solid #2d3436;
     border-radius: 4px;
     box-shadow: inset 0 0 30px rgba(255,255,255,0.02);
-    flex: 1; 
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     overflow: hidden;
 }}
+
+/* Nav screen specifically needs flex-grow to fill the big box */
+.nav-screen-inner {
+    flex: 1;
+    width: 100%;
+}
 
 .nav-value {{
     font-family: 'Orbitron', sans-serif;
@@ -272,7 +279,7 @@ if not st.session_state.secure_mode:
 <div class="screw tl"></div><div class="screw tr"></div>
 <div class="screw bl"></div><div class="screw br"></div>
 <div class="label-text">NAV MONITOR</div>
-<div class="screen">
+<div class="screen nav-screen-inner">
 <div class="nav-value">{nav_str}</div>
 </div>
 </div>
@@ -280,7 +287,7 @@ if not st.session_state.secure_mode:
 <div class="screw tl"></div><div class="screw tr"></div>
 <div class="screw bl"></div><div class="screw br"></div>
 <div class="label-text">ACTIVE TRANSMISSIONS</div>
-<div class="screen" style="display:block; padding:0; overflow-y:auto;">
+<div class="screen" style="display:block; padding:0;">
 <table class="trade-table">
 <thead>
 <tr style="background:#000;">
