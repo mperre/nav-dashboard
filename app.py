@@ -40,13 +40,21 @@ st.markdown(f"""
     background-color: {bg_color} !important;
 }}
 
-/* LAYOUT: TIGHTEN TOP GAP */
-/* margin-top: -35px pulls standard Streamlit padding up significantly. */
-/* padding: 5px creates a thin, uniform black border around the whole app. */
+/* LAYOUT: UNIFORM 10PX BORDER */
 .block-container {{
-    padding: 5px !important;
+    /* 1. Reset Margins/Padding */
     margin: 0 !important;
-    margin-top: -35px !important; 
+    
+    /* 2. Pull content up to hide Streamlit header (approx 50-60px) */
+    margin-top: -55px !important; 
+    
+    /* 3. Add the exact 10px border you requested */
+    padding-top: 10px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    padding-bottom: 0 !important;
+    
+    /* 4. Force full height */
     max-width: 100% !important;
     height: 100vh; 
     min-height: -webkit-fill-available;
@@ -58,19 +66,20 @@ st.markdown(f"""
 header, footer, [data-testid="stToolbar"] {{display: none !important;}}
 
 /* DASHBOARD CONTAINER */
-/* Height = Viewport - Button (70px) - Padding adjustments */
+/* Fills the screen, reserving space (80px) at the bottom for the button */
 .dashboard-container {{
-    height: calc(100vh - 80px); 
+    flex: 1; /* Grow to fill screen */
     width: 100%;
     display: flex;
     flex-direction: column;
     gap: 10px; 
+    padding-bottom: 80px; /* Space for the fixed button */
     box-sizing: border-box;
-    padding-bottom: 10px;
+    overflow: hidden;
 }}
 
-/* NAV BOX (Top) - DOMINANT */
-/* flex: 1 means "Fill all available space left over by the bottom box" */
+/* NAV BOX (Top) - THE EXPANDER */
+/* flex: 1 ensures it eats ALL empty space, pushing the bottom box down */
 .nav-box {{
     flex: 1; 
     background-color: #1e272e;
@@ -81,16 +90,14 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    min-height: 200px; /* Ensure it never collapses too much */
+    min-height: 200px; 
 }}
 
-/* TRADE BOX (Bottom) - DYNAMIC */
-/* flex: 0 0 auto means "Size exactly to fit content". */
-/* max-height: 40vh prevents it from ever taking more than 40% of screen. */
+/* TRADE BOX (Bottom) - CONTENT SIZED */
+/* flex: 0 0 auto means it only takes the space it needs for rows */
 .trade-box {{
-    flex: 0 0 auto; 
-    height: auto;
-    max-height: 40vh;
+    flex: 0 0 auto;
+    max-height: 40vh; /* Cap it at 40% height so it doesn't takeover */
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -98,7 +105,7 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     position: relative;
     display: flex;
     flex-direction: column;
-    overflow-y: auto; /* Scroll if list gets very long */
+    overflow-y: auto; 
 }}
 
 /* BUTTON STYLING (FIXED FOOTER) */
@@ -157,11 +164,14 @@ div.stButton > button:hover {{
     overflow: hidden;
 }}
 
-/* Nav screen specifically needs flex-grow to fill the big box */
-.nav-screen-inner {
+/* FIX FOR NAME ERROR: Double Braces {{ }} */
+.nav-screen-inner {{
     flex: 1;
     width: 100%;
-}
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}}
 
 .nav-value {{
     font-family: 'Orbitron', sans-serif;
@@ -260,7 +270,7 @@ if not st.session_state.secure_mode:
                     if (u > 0 and tv > p) or (u < 0 and tv < p):
                         l_s, l_c = "LOCKED", "locked"
 
-            # CRITICAL: FLUSH LEFT HTML - NO INDENTATION
+            # FLUSH LEFT HTML - NO INDENTATION
             rows += f"""<tr>
 <td class="{s_cls}">{side}</td>
 <td>{int(u)}</td>
@@ -272,7 +282,7 @@ if not st.session_state.secure_mode:
     else:
         rows = "<tr><td colspan='6' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
 
-    # CRITICAL: FLUSH LEFT HTML - NO INDENTATION
+    # FLUSH LEFT HTML
     st.markdown(f"""
 <div class="dashboard-container">
 <div class="nav-box">
@@ -301,7 +311,5 @@ if not st.session_state.secure_mode:
 </div>
 """, unsafe_allow_html=True)
 
-    # LOOP: Only run the refresh loop if we are NOT in secure mode.
-    # This fixes the "cycling" issue.
     time.sleep(2)
     st.rerun()
