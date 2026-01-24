@@ -40,13 +40,15 @@ st.markdown(f"""
     background-color: {bg_color} !important;
 }}
 
-/* LAYOUT TUNING */
-/* margin-top: -40px is the "Goldilocks" zone. */
-/* -60px was too high (cut off top), 0px was too low (black gap). */
+/* LAYOUT FIX: UNIFORM BORDER */
+/* We set padding to 10px on all sides (Top, Left, Right). */
+/* This creates the symmetrical black frame you requested. */
 .block-container {{
-    padding: 0 !important;
+    padding-top: 10px !important;    /* Small gap at top */
+    padding-left: 10px !important;   /* Matching gap at left */
+    padding-right: 10px !important;  /* Matching gap at right */
+    padding-bottom: 0 !important;
     margin: 0 !important;
-    margin-top: -40px !important; 
     max-width: 100% !important;
     height: 100vh; 
     min-height: -webkit-fill-available;
@@ -58,22 +60,21 @@ st.markdown(f"""
 header, footer, [data-testid="stToolbar"] {{display: none !important;}}
 
 /* DASHBOARD CONTAINER */
-/* We reserve 80px at the bottom so content never gets hidden behind the button */
+/* Force height to fill screen down to the button (100vh - 70px) */
+/* This eliminates the big black void at the bottom */
 .dashboard-container {{
-    flex: 1;
+    height: calc(100vh - 80px); /* 100vh - Button(70) - TopPad(10) */
     width: 100%;
     display: flex;
     flex-direction: column;
     gap: 10px; 
-    padding: 10px;
-    padding-bottom: 80px; /* buffer for the fixed button */
     box-sizing: border-box;
-    overflow: hidden; /* Prevent double scrollbars */
 }}
 
-/* NAV BOX (Top) - Flex 1.5 (60% height) */
+/* NAV BOX (Top) - Flex 1.2 */
+/* Takes slightly more than half the space */
 .nav-box {{
-    flex: 1.5; 
+    flex: 1.2; 
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -84,7 +85,8 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     overflow: hidden;
 }}
 
-/* TRADE BOX (Bottom) - Flex 1 (40% height) */
+/* TRADE BOX (Bottom) - Flex 1 */
+/* Takes the remaining space, stretching to the button */
 .trade-box {{
     flex: 1; 
     background-color: #1e272e;
@@ -229,8 +231,6 @@ else:
 st.button(btn_label, on_click=toggle_secure)
 
 # DASHBOARD CONTENT
-# If SECURE: We do NOT render any HTML, ensuring a totally black screen.
-# If ACTIVE: We fetch data, render HTML, and enable auto-refresh.
 if not st.session_state.secure_mode:
     acct, trades = get_data()
     nav_str = "£750" 
