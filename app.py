@@ -32,7 +32,7 @@ except:
 # ==========================================
 bg_color = "#000000" if st.session_state.secure_mode else "#0d1117"
 
-# NOTE: All CSS brackets below are doubled {{ }} to prevent NameError crash
+# NOTE: ALL BRACES ARE DOUBLED {{ }} TO PREVENT PYTHON ERRORS
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
@@ -42,12 +42,12 @@ st.markdown(f"""
     background-color: {bg_color} !important;
 }}
 
-/* LAYOUT: UNIFORM 10PX BORDER */
+/* LAYOUT: UNIFORM 10PX BORDER (TOP/LEFT/RIGHT) */
 .block-container {{
     margin: 0 !important;
-    margin-top: -55px !important; /* Hide header */
+    margin-top: -55px !important; /* Hide Streamlit Header */
     
-    /* Uniform 10px border on Top, Left, Right */
+    /* 10px Border on Top and Sides, 0 on Bottom */
     padding-top: 10px !important;
     padding-left: 10px !important;
     padding-right: 10px !important;
@@ -70,14 +70,14 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     display: flex;
     flex-direction: column;
     gap: 10px; 
-    padding-bottom: 80px; /* Space for button */
+    padding-bottom: 80px; /* Space for fixed button */
     box-sizing: border-box;
     overflow: hidden;
 }}
 
-/* NAV BOX (Top) - TAKES REMAINING SPACE */
+/* NAV BOX (Top) - EXPANDS TO FILL SPACE */
 .nav-box {{
-    flex: 1; /* Grows to fill space */
+    flex: 1; 
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -89,10 +89,10 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     min-height: 200px; 
 }}
 
-/* TRADE BOX (Bottom) - AUTO HEIGHT */
+/* TRADE BOX (Bottom) - SHRINKS TO CONTENT */
 .trade-box {{
-    flex: 0 0 auto; /* Height determined by content */
-    max-height: 40vh; /* Max 40% of screen */
+    flex: 0 0 auto;
+    max-height: 40vh; 
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -233,6 +233,7 @@ def get_data():
 # 4. UI RENDER
 # ==========================================
 
+# RENDER BUTTON
 if st.session_state.secure_mode:
     btn_label = "👁️ ACTIVATE SYSTEM"
 else:
@@ -240,6 +241,7 @@ else:
 
 st.button(btn_label, on_click=toggle_secure)
 
+# RENDER CONTENT ONLY IF NOT SECURE
 if not st.session_state.secure_mode:
     acct, trades = get_data()
     nav_str = "£750" 
@@ -262,7 +264,6 @@ if not st.session_state.secure_mode:
                     if (u > 0 and tv > p) or (u < 0 and tv < p):
                         l_s, l_c = "LOCKED", "locked"
 
-            # IMPORTANT: NO INDENTATION HERE TO PREVENT RAW TEXT RENDER
             rows += f"""<tr>
 <td class="{s_cls}">{side}</td>
 <td>{int(u)}</td>
@@ -274,8 +275,8 @@ if not st.session_state.secure_mode:
     else:
         rows = "<tr><td colspan='6' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
 
-    # IMPORTANT: NO INDENTATION HERE TO PREVENT RAW TEXT RENDER
-    st.markdown(f"""
+    # HTML STRING - FLUSH LEFT
+    dashboard_html = f"""
 <div class="dashboard-container">
 <div class="nav-box">
 <div class="screw tl"></div><div class="screw tr"></div>
@@ -301,7 +302,8 @@ if not st.session_state.secure_mode:
 </div>
 </div>
 </div>
-""", unsafe_allow_html=True)
+"""
+    st.markdown(dashboard_html, unsafe_allow_html=True)
 
     time.sleep(2)
     st.rerun()
