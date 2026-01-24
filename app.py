@@ -1,5 +1,5 @@
 import streamlit as st
-import streamlit.components.v1 as components # Required for JS injection
+import streamlit.components.v1 as components
 import requests
 import time
 
@@ -11,15 +11,11 @@ st.set_page_config(page_title="COMMAND INTERFACE", layout="wide")
 if 'secure_mode' not in st.session_state:
     st.session_state.secure_mode = False
 
-# New State Variable to track if we need to vibrate
 if 'trigger_haptic' not in st.session_state:
     st.session_state.trigger_haptic = False
 
 def toggle_secure():
-    # Toggle the mode
     st.session_state.secure_mode = not st.session_state.secure_mode
-    
-    # If we just turned ON secure mode (screen goes black), trigger the haptic
     if st.session_state.secure_mode:
         st.session_state.trigger_haptic = True
 
@@ -37,45 +33,37 @@ except:
     st.stop()
 
 # ==========================================
-# 2. HAPTIC FEEDBACK INJECTION
+# 2. HAPTIC FEEDBACK (JS Injection)
 # ==========================================
-# This runs JavaScript only when the 'trigger_haptic' flag is True
 if st.session_state.trigger_haptic:
-    # Attempt to vibrate the device for 50ms (Short haptic tap)
-    # Note: iOS usually blocks this, but Android allows it.
     js_vibration = """
     <script>
-        try {
-            window.navigator.vibrate(50);
-        } catch(e) {
-            console.log("Haptic not supported");
-        }
+        try { window.navigator.vibrate(50); } catch(e) {}
     </script>
     """
     components.html(js_vibration, height=0, width=0)
-    
-    # Reset the trigger so it doesn't vibrate constantly
     st.session_state.trigger_haptic = False
 
 # ==========================================
-# 3. CSS STYLING
+# 3. CSS STYLING (LOCKED LAYOUT)
 # ==========================================
 if st.session_state.secure_mode:
-    dash_opacity = "0"             
-    dash_pointer = "none"          
+    dash_opacity = "0"
+    dash_pointer = "none"
     dash_transition = "opacity 0s" # INSTANT BLACK
 else:
-    dash_opacity = "1"             
-    dash_pointer = "auto"          
-    dash_transition = "opacity 0.5s ease-in" # FADE IN REVEAL
+    dash_opacity = "1"
+    dash_pointer = "auto"
+    dash_transition = "opacity 0.5s ease-in" # FADE REVEAL
 
 css_template = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
 
-/* GLOBAL RESET */
+/* GLOBAL RESET & SCROLL LOCK */
 .stApp {{
     background-color: #000000 !important;
+    overflow: hidden !important; /* PREVENTS SCROLLING */
 }}
 
 /* HIDE SYSTEM UI */
@@ -86,7 +74,7 @@ header {{visibility: hidden !important;}}
 [data-testid="stDecoration"] {{display: none !important;}}
 [data-testid="stStatusWidget"] {{display: none !important;}}
 
-/* FULL SCREEN BUTTON */
+/* FULL SCREEN INTERACTION BUTTON */
 div.stButton > button {{
     position: fixed !important;
     top: 0 !important;
@@ -101,6 +89,7 @@ div.stButton > button {{
     border-radius: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
+    outline: none !important;
 }}
 div.stButton > button:hover, div.stButton > button:active, div.stButton > button:focus {{
     background-color: transparent !important;
@@ -109,14 +98,15 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     box-shadow: none !important;
 }}
 
-/* DASHBOARD CONTAINER */
+/* CONTAINER STYLING */
 .block-container {{
     margin: 0 !important;
     margin-top: -55px !important; 
     padding: 35px 10px 0 10px !important;
     max-width: 100% !important;
-    height: 100vh; 
-    min-height: -webkit-fill-available;
+    height: 100vh !important; 
+    min-height: 100vh !important;
+    overflow: hidden !important; /* PREVENTS "EXTRA" CONTENT */
     display: flex;
     flex-direction: column;
 }}
@@ -133,7 +123,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     transition: {dash_transition}; 
 }}
 
-/* BOX STYLES */
+/* COMPONENT BOXES */
 .nav-box, .trade-box {{
     background-color: #1e272e;
     border: 3px solid #485460;
@@ -147,7 +137,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 .nav-box {{ flex: 1; min-height: 200px; }}
 .trade-box {{ flex: 0 0 auto; max-height: 40vh; }}
 
-/* SCREEN STYLES */
+/* SCREEN */
 .screen {{
     background-color: #000000;
     border: 2px solid #2d3436;
@@ -162,7 +152,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     height: 100%;
 }}
 
-/* TEXT STYLES */
+/* TEXT */
 .label-text {{
     font-family: 'Orbitron', sans-serif;
     font-size: 12px;
@@ -181,6 +171,8 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     line-height: 1;
     margin-top: -10px; 
 }}
+
+/* TABLE */
 .trade-table {{
     width: 100%;
     color: #dcdde1;
@@ -216,7 +208,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 st.markdown(css_template, unsafe_allow_html=True)
 
 # ==========================================
-# 4. RENDER TOGGLE BUTTON
+# 4. TOGGLE BUTTON
 # ==========================================
 st.button(" ", on_click=toggle_secure, key="overlay_btn")
 
@@ -236,7 +228,7 @@ def get_data():
     return None, None
 
 # ==========================================
-# 6. UI RENDER
+# 6. RENDER
 # ==========================================
 acct, trades = get_data()
 
@@ -267,7 +259,7 @@ if trades:
                 tsl = f"{tv:.3f}"
                 if (u > 0 and tv > entry) or (u < 0 and tv < entry):
                     l_s, l_c = "LOCKED", "#0be881"
-
+        
         rows += f"""<tr>
             <td style="color: {dir_color}">{side}</td>
             <td>{int(u)}</td>
