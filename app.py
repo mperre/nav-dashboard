@@ -27,7 +27,7 @@ except:
     st.stop()
 
 # ==========================================
-# 2. CSS STYLING (Standard String - No Crash)
+# 2. CSS STYLING
 # ==========================================
 css_template = """
 <style>
@@ -43,9 +43,8 @@ css_template = """
     margin: 0 !important;
     margin-top: -55px !important; /* Hide Streamlit Header */
     
-    /* TOP GAP: 30px */
-    padding-top: 30px !important;
-    
+    /* Top Padding fixed at 35px */
+    padding-top: 35px !important;
     padding-left: 10px !important;
     padding-right: 10px !important;
     padding-bottom: 0 !important;
@@ -62,9 +61,10 @@ header, footer, [data-testid="stToolbar"] {display: none !important;}
 
 /* DASHBOARD WRAPPER */
 /* CALCULATION: */
-/* 30px (Top Gap) + 25px (Bottom Gap) + 70px (Button) = 125px total deduction */
+/* 35px (Top Gap) + 0px (Bottom Gap) + 70px (Button) = 105px total deduction */
+/* This reduces the bottom gap to near zero/flush with button */
 .dashboard-container {
-    height: calc(100vh - 125px);
+    height: calc(100vh - 105px);
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -235,7 +235,7 @@ def get_data():
 # 4. UI RENDER
 # ==========================================
 
-# BUTTON - ALWAYS SAYS "SECURE SYSTEM"
+# BUTTON - PERMANENT TEXT
 st.button("🔒 SECURE SYSTEM", on_click=toggle_secure)
 
 if not st.session_state.secure_mode:
