@@ -29,6 +29,7 @@ except:
 # ==========================================
 # 2. CSS STYLING
 # ==========================================
+# Logic: If Secure Mode -> Pure Black (#000000), Else -> Dark Blue-Grey (#0d1117)
 bg_color = "#000000" if st.session_state.secure_mode else "#0d1117"
 
 st.markdown(f"""
@@ -40,13 +41,13 @@ st.markdown(f"""
     background-color: {bg_color} !important;
 }}
 
-/* ELIMINATE TOP SPACE & CONFIGURE LAYOUT */
+/* LAYOUT FIX: Remove Top Padding/Margin safely */
 .block-container {{
-    padding-top: 0rem !important;
-    padding-bottom: 0rem !important;
+    padding-top: 0 !important;      /* Sit flush at the top */
+    padding-bottom: 0 !important;
     padding-left: 0.5rem !important;
     padding-right: 0.5rem !important;
-    margin-top: -40px !important; /* Pull content up aggressively */
+    margin-top: 0 !important;       /* No negative margin (prevents cutoff) */
     max-width: 100% !important;
     height: 100vh; 
     min-height: -webkit-fill-available;
@@ -59,20 +60,20 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
 
 /* --- DASHBOARD CONTAINER --- */
 .dashboard-container {{
-    /* Height is viewport minus button height (70px) and a small buffer */
+    /* Height: 100vh minus button height (70px) */
     height: calc(100vh - 70px);
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Space between the two boxes */
+    gap: 15px; 
+    padding-top: 10px; /* Small buffer from very top edge */
     padding-bottom: 10px;
     box-sizing: border-box;
 }}
 
 /* --- NAV BOX (Top) --- */
 .nav-box {{
-    /* Flex 1 means "take all remaining space" */
-    flex: 1; 
+    flex: 1; /* Grows to fill empty space */
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -80,15 +81,12 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     position: relative;
     display: flex;
     flex-direction: column;
-    /* Ensure it doesn't get too small */
     min-height: 150px; 
 }}
 
 /* --- TRADE BOX (Bottom) --- */
 .trade-box {{
-    /* Flex 0 0 200px means: Don't grow, Don't shrink, Stay exactly 200px tall */
-    /* Adjust '200px' if you want it taller/shorter */
-    flex: 0 0 200px; 
+    flex: 0 0 200px; /* Fixed height: ensures bottom box is always fully visible */
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -108,7 +106,7 @@ div.stButton {{
     z-index: 9999;
     padding: 0 !important;
     margin: 0 !important;
-    background-color: #000;
+    background-color: {bg_color}; /* Blend button container with bg */
 }}
 
 div.stButton > button {{
@@ -222,7 +220,8 @@ def get_data():
 # 4. UI RENDER
 # ==========================================
 
-# BUTTON (Rendered first but positioned fixed at bottom)
+# RENDER BUTTON
+# The button is physically rendered here, but CSS 'position: fixed' moves it to the bottom.
 if st.session_state.secure_mode:
     btn_label = "👁️ ACTIVATE SYSTEM"
 else:
@@ -230,7 +229,9 @@ else:
 
 st.button(btn_label, on_click=toggle_secure)
 
-# DASHBOARD CONTENT (Only renders if NOT secure mode)
+# RENDER DASHBOARD CONTENT
+# CRITICAL: This entire block is skipped if secure_mode is True.
+# This ensures the screen is totally black (background color) with no elements.
 if not st.session_state.secure_mode:
     acct, trades = get_data()
     nav_str = "£750" 
@@ -264,7 +265,7 @@ if not st.session_state.secure_mode:
     else:
         rows = "<tr><td colspan='6' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
 
-    # MAIN LAYOUT
+    # MAIN DASHBOARD HTML
     st.markdown(f"""
 <div class="dashboard-container">
     <div class="nav-box">
