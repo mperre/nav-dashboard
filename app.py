@@ -41,13 +41,13 @@ st.markdown(f"""
     background-color: {bg_color} !important;
 }}
 
-/* LAYOUT FIX: Remove Top Padding/Margin safely */
+/* LAYOUT FIX: Remove default padding & negative margin to pull content to top */
 .block-container {{
-    padding-top: 0 !important;      /* Sit flush at the top */
+    padding-top: 0 !important;
     padding-bottom: 0 !important;
     padding-left: 0.5rem !important;
     padding-right: 0.5rem !important;
-    margin-top: 0 !important;       /* No negative margin (prevents cutoff) */
+    margin-top: -60px !important; /* Pulls content up to cover header space */
     max-width: 100% !important;
     height: 100vh; 
     min-height: -webkit-fill-available;
@@ -60,20 +60,20 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
 
 /* --- DASHBOARD CONTAINER --- */
 .dashboard-container {{
-    /* Height: 100vh minus button height (70px) */
+    /* Fill height minus button (70px) */
     height: calc(100vh - 70px);
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 15px; 
-    padding-top: 10px; /* Small buffer from very top edge */
-    padding-bottom: 10px;
+    gap: 10px; 
+    padding-top: 15px; 
+    padding-bottom: 5px;
     box-sizing: border-box;
 }}
 
 /* --- NAV BOX (Top) --- */
 .nav-box {{
-    flex: 1; /* Grows to fill empty space */
+    flex: 5; /* Takes 5/9 of space */
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -81,12 +81,12 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     position: relative;
     display: flex;
     flex-direction: column;
-    min-height: 150px; 
+    overflow: hidden;
 }}
 
 /* --- TRADE BOX (Bottom) --- */
 .trade-box {{
-    flex: 0 0 200px; /* Fixed height: ensures bottom box is always fully visible */
+    flex: 4; /* Takes 4/9 of space */
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -106,7 +106,7 @@ div.stButton {{
     z-index: 9999;
     padding: 0 !important;
     margin: 0 !important;
-    background-color: {bg_color}; /* Blend button container with bg */
+    background-color: {bg_color};
 }}
 
 div.stButton > button {{
@@ -156,7 +156,7 @@ div.stButton > button:hover {{
 
 .nav-value {{
     font-family: 'Orbitron', sans-serif;
-    font-size: min(25vh, 20vw); 
+    font-size: min(25vh, 25vw); 
     color: #0be881;
     font-weight: 900;
     text-shadow: 0 0 20px rgba(11,232,129,0.4);
@@ -220,8 +220,7 @@ def get_data():
 # 4. UI RENDER
 # ==========================================
 
-# RENDER BUTTON
-# The button is physically rendered here, but CSS 'position: fixed' moves it to the bottom.
+# BUTTON (Rendered first but positioned fixed at bottom)
 if st.session_state.secure_mode:
     btn_label = "👁️ ACTIVATE SYSTEM"
 else:
@@ -229,9 +228,9 @@ else:
 
 st.button(btn_label, on_click=toggle_secure)
 
-# RENDER DASHBOARD CONTENT
-# CRITICAL: This entire block is skipped if secure_mode is True.
-# This ensures the screen is totally black (background color) with no elements.
+# DASHBOARD CONTENT
+# If secure_mode is True, we skip this entire block.
+# CSS background handles the black screen.
 if not st.session_state.secure_mode:
     acct, trades = get_data()
     nav_str = "£750" 
@@ -254,6 +253,7 @@ if not st.session_state.secure_mode:
                     if (u > 0 and tv > p) or (u < 0 and tv < p):
                         l_s, l_c = "LOCKED", "locked"
 
+            # WARNING: NO INDENTATION ALLOWED IN THIS STRING
             rows += f"""<tr>
 <td class="{s_cls}">{side}</td>
 <td>{int(u)}</td>
@@ -265,33 +265,32 @@ if not st.session_state.secure_mode:
     else:
         rows = "<tr><td colspan='6' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
 
-    # MAIN DASHBOARD HTML
+    # MAIN LAYOUT - FLUSH LEFT TO PREVENT RAW TEXT BUG
     st.markdown(f"""
 <div class="dashboard-container">
-    <div class="nav-box">
-        <div class="screw tl"></div><div class="screw tr"></div>
-        <div class="screw bl"></div><div class="screw br"></div>
-        <div class="label-text">NAV MONITOR</div>
-        <div class="screen">
-            <div class="nav-value">{nav_str}</div>
-        </div>
-    </div>
-    
-    <div class="trade-box">
-        <div class="screw tl"></div><div class="screw tr"></div>
-        <div class="screw bl"></div><div class="screw br"></div>
-        <div class="label-text">ACTIVE TRANSMISSIONS</div>
-        <div class="screen" style="display:block; padding:0; overflow-y:auto;">
-            <table class="trade-table">
-            <thead>
-                <tr style="background:#000;">
-                    <th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th><th>TSL</th><th>LOCK</th>
-                </tr>
-            </thead>
-            <tbody>{rows}</tbody>
-            </table>
-        </div>
-    </div>
+<div class="nav-box">
+<div class="screw tl"></div><div class="screw tr"></div>
+<div class="screw bl"></div><div class="screw br"></div>
+<div class="label-text">NAV MONITOR</div>
+<div class="screen">
+<div class="nav-value">{nav_str}</div>
+</div>
+</div>
+<div class="trade-box">
+<div class="screw tl"></div><div class="screw tr"></div>
+<div class="screw bl"></div><div class="screw br"></div>
+<div class="label-text">ACTIVE TRANSMISSIONS</div>
+<div class="screen" style="display:block; padding:0; overflow-y:auto;">
+<table class="trade-table">
+<thead>
+<tr style="background:#000;">
+<th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th><th>TSL</th><th>LOCK</th>
+</tr>
+</thead>
+<tbody>{rows}</tbody>
+</table>
+</div>
+</div>
 </div>
 """, unsafe_allow_html=True)
 
