@@ -45,7 +45,7 @@ if st.session_state.trigger_haptic:
     st.session_state.trigger_haptic = False
 
 # ==========================================
-# 3. CSS STYLING (LOCKED LAYOUT)
+# 3. CSS STYLING
 # ==========================================
 if st.session_state.secure_mode:
     dash_opacity = "0"
@@ -63,7 +63,7 @@ css_template = f"""
 /* GLOBAL RESET & SCROLL LOCK */
 .stApp {{
     background-color: #000000 !important;
-    overflow: hidden !important; /* PREVENTS SCROLLING */
+    overflow: hidden !important; 
 }}
 
 /* HIDE SYSTEM UI */
@@ -106,13 +106,14 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     max-width: 100% !important;
     height: 100vh !important; 
     min-height: 100vh !important;
-    overflow: hidden !important; /* PREVENTS "EXTRA" CONTENT */
+    overflow: hidden !important;
     display: flex;
     flex-direction: column;
 }}
 
 .dashboard-container {{
-    height: calc(100vh - 45px);
+    /* CHANGED: Increased deduction from 45px to 80px to lift bottom up */
+    height: calc(100vh - 80px);
     width: 100%;
     display: flex;
     flex-direction: column;
