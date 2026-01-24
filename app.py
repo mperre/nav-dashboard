@@ -3,7 +3,7 @@ import requests
 import time
 
 # ==========================================
-# 1. CONFIGURATION & SECRETS
+# 1. CONFIGURATION & STATE
 # ==========================================
 st.set_page_config(page_title="COMMAND INTERFACE", layout="wide")
 
@@ -14,13 +14,14 @@ if 'secure_mode' not in st.session_state:
 def toggle_secure():
     st.session_state.secure_mode = not st.session_state.secure_mode
 
-# Fetch Secrets
+# Secrets Handling
 try:
     if "ACCOUNT_ID" in st.secrets:
         ACCOUNT_ID = st.secrets["ACCOUNT_ID"]
         API_TOKEN = st.secrets["API_TOKEN"]
         ENVIRONMENT = st.secrets["ENVIRONMENT"]
     else:
+        # Fallback defaults
         ACCOUNT_ID = "000-000-0000000-000"
         API_TOKEN = "token"
         ENVIRONMENT = "practice"
@@ -28,11 +29,10 @@ except:
     st.stop()
 
 # ==========================================
-# 2. CSS STYLING & OVERLAY LOGIC
+# 2. CSS STYLING
 # ==========================================
-# Determine overlay color based on state
-# False = Transparent (See dashboard). True = Black (Hide dashboard).
-overlay_color = "#000000" if st.session_state.secure_mode else "rgba(0,0,0,0)"
+# Logic: If secure_mode is True, overlay is BLACK. If False, it is TRANSPARENT.
+overlay_bg = "#000000" if st.session_state.secure_mode else "rgba(0,0,0,0)"
 
 css_template = f"""
 <style>
@@ -44,10 +44,8 @@ css_template = f"""
 }}
 
 /* -----------------------------------------------------------
-   FULL SCREEN OVERLAY BUTTON
-   Targeting the specific button by key doesn't work easily in CSS 
-   selectors for Streamlit, so we target the First Button in the DOM.
-   Since we define it first in Python, this works.
+   FULL SCREEN TOGGLE BUTTON
+   This forces the st.button to cover the entire viewport.
 ----------------------------------------------------------- */
 div.stButton > button {{
     position: fixed !important;
@@ -55,36 +53,33 @@ div.stButton > button {{
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    z-index: 999999 !important; /* Always on top */
+    z-index: 999999 !important; /* Topmost layer */
     
-    background-color: {overlay_color} !important;
+    background-color: {overlay_bg} !important;
     
     border: none !important;
     color: transparent !important;
-    cursor: default !important; /* Normal cursor so it feels like a screen tap */
+    cursor: default !important; 
     border-radius: 0 !important;
-    padding: 0 !important;
     margin: 0 !important;
+    padding: 0 !important;
 }}
 
-/* Remove hover effects so it doesn't flicker */
+/* Remove hover effects to prevent flickering */
 div.stButton > button:hover, div.stButton > button:active, div.stButton > button:focus {{
-    background-color: {overlay_color} !important;
+    background-color: {overlay_bg} !important;
     border: none !important;
     color: transparent !important;
     box-shadow: none !important;
 }}
 
 /* -----------------------------------------------------------
-   DASHBOARD LAYOUT (The "Sci-Fi" Look)
+   DASHBOARD STYLING (Sci-Fi Look)
 ----------------------------------------------------------- */
 .block-container {{
     margin: 0 !important;
     margin-top: -55px !important; 
-    padding-top: 35px !important;
-    padding-left: 10px !important;
-    padding-right: 10px !important;
-    padding-bottom: 0 !important;
+    padding: 35px 10px 0 10px !important;
     max-width: 100% !important;
     height: 100vh; 
     min-height: -webkit-fill-available;
@@ -94,19 +89,18 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 
 header, footer, [data-testid="stToolbar"] {{display: none !important;}}
 
-/* Flex Container for the two boxes */
+/* MAIN CONTAINER */
 .dashboard-container {{
-    height: calc(100vh - 45px); /* Full height minus top padding/gap */
+    height: calc(100vh - 45px);
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 10px; 
+    gap: 15px; 
     box-sizing: border-box;
 }}
 
-/* NAV BOX */
-.nav-box {{
-    flex: 1; /* Grows to fill space */
+/* BOX STYLES */
+.nav-box, .trade-box {{
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -115,35 +109,12 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    min-height: 200px; 
 }}
 
-/* TRADE BOX */
-.trade-box {{
-    flex: 0 0 auto; 
-    max-height: 40vh; /* Limits trade box height */
-    background-color: #1e272e;
-    border: 3px solid #485460;
-    border-radius: 6px;
-    padding: 10px;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    overflow-y: hidden; /* Hide scrollbar since interaction is disabled */
-}}
+.nav-box {{ flex: 1; min-height: 200px; }}
+.trade-box {{ flex: 0 0 auto; max-height: 40vh; }}
 
-/* TYPOGRAPHY */
-.label-text {{
-    font-family: 'Orbitron', sans-serif;
-    font-size: 11px;
-    color: #808e9b;
-    font-weight: 800;
-    letter-spacing: 1px;
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    padding-left: 4px;
-}}
-
+/* SCREEN (CRT EFFECT) */
 .screen {{
     background-color: #000000;
     border: 2px solid #2d3436;
@@ -154,14 +125,20 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     justify-content: center;
     position: relative;
     overflow: hidden;
+    width: 100%;
+    height: 100%;
 }}
 
-.nav-screen-inner {{
-    flex: 1;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* TYPOGRAPHY */
+.label-text {{
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    color: #808e9b;
+    font-weight: 800;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    padding-left: 4px;
 }}
 
 .nav-value {{
@@ -204,19 +181,13 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
 }}
 .tl {{top:6px; left:6px;}} .tr {{top:6px; right:6px;}}
 .bl {{bottom:6px; left:6px;}} .br {{bottom:6px; right:6px;}}
-
-/* STATUS COLORS */
-.long {{ color: #0be881; }} .short {{ color: #ff3f34; }}
-.locked {{ color: #0be881; font-weight: bold; }}
-.wait {{ color: #ff9f43; }}
 </style>
 """
 st.markdown(css_template, unsafe_allow_html=True)
 
 # ==========================================
-# 3. OVERLAY BUTTON (RENDER FIRST)
+# 3. RENDER TOGGLE BUTTON (COVERS EVERYTHING)
 # ==========================================
-# This button covers the whole screen due to the CSS above.
 st.button(" ", on_click=toggle_secure, key="overlay_btn")
 
 # ==========================================
@@ -235,16 +206,19 @@ def get_data():
     return None, None
 
 # ==========================================
-# 5. UI RENDER (BEHIND THE BUTTON)
+# 5. UI RENDER (Only renders visually if logic runs)
 # ==========================================
+# Note: Even if secure_mode is True, we can render the HTML underneath. 
+# The CSS overlay simply hides it from view.
+
 acct, trades = get_data()
 
 # --- NAV LOGIC ---
-nav_str = "£750" 
+nav_str = "£0" 
 if acct: 
     nav_str = f"£{float(acct['NAV']):,.0f}"
 
-# Font Scaling
+# Dynamic Font Scaling
 char_len = len(nav_str)
 if char_len <= 4: f_size = "min(25vh, 25vw)"
 elif char_len <= 6: f_size = "min(19vh, 19vw)"
@@ -255,40 +229,45 @@ else: f_size = "min(12vh, 12vw)"
 rows = ""
 if trades:
     for t in trades:
-        u, p, pl = float(t['currentUnits']), float(t.get('price', 0)), float(t['unrealizedPL'])
-        side, s_cls = ("LONG", "long") if u > 0 else ("SHORT", "short")
-        pl_c = "#0be881" if pl >= 0 else "#ff9f43"
+        u = float(t['currentUnits'])
+        entry = float(t.get('price', 0))
+        pl = float(t['unrealizedPL'])
         
-        tsl, l_s, l_c = "-", "WAIT", "wait"
+        # Formatting
+        side = "LONG" if u > 0 else "SHORT"
+        s_cls = "long" if u > 0 else "short"  # Assumes .long/.short CSS classes (added below)
+        pl_color = "#0be881" if pl >= 0 else "#ff9f43"
+        
+        # TSL Logic
+        tsl, l_s, l_c = "-", "WAIT", "#ff9f43"
         if 'trailingStopLossOrder' in t:
             trig = t['trailingStopLossOrder'].get('triggerPrice')
             if trig:
                 tv = float(trig)
                 tsl = f"{tv:.3f}"
-                if (u > 0 and tv > p) or (u < 0 and tv < p):
-                    l_s, l_c = "LOCKED", "locked"
+                if (u > 0 and tv > entry) or (u < 0 and tv < entry):
+                    l_s, l_c = "LOCKED", "#0be881"
 
-        # Construct Table Row HTML
         rows += f"""<tr>
-<td class="{s_cls}">{side}</td>
-<td>{int(u)}</td>
-<td>{t['instrument'].replace('_','/')}</td>
-<td style="color:{pl_c}">£{pl:.2f}</td>
-<td>{tsl}</td>
-<td class="{l_c}">{l_s}</td>
-</tr>"""
+            <td style="color: {'#0be881' if u>0 else '#ff3f34'}">{side}</td>
+            <td>{int(u)}</td>
+            <td>{t['instrument'].replace('_','/')}</td>
+            <td style="color:{pl_color}">£{pl:.2f}</td>
+            <td>{tsl}</td>
+            <td style="color:{l_c}; font-weight:bold;">{l_s}</td>
+        </tr>"""
 else:
     rows = "<tr><td colspan='6' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
 
-# --- FINAL HTML STRUCTURE ---
+# --- DASHBOARD HTML ---
 dashboard_html = f"""
 <div class="dashboard-container">
     <div class="nav-box">
         <div class="screw tl"></div><div class="screw tr"></div>
         <div class="screw bl"></div><div class="screw br"></div>
         <div class="label-text">NAV MONITOR</div>
-        <div class="screen nav-screen-inner">
-            <div class="nav-value" style="font-size: {f_size};">{nav_str}</div>
+        <div class="screen">
+             <div class="nav-value" style="font-size: {f_size};">{nav_str}</div>
         </div>
     </div>
 
@@ -299,9 +278,7 @@ dashboard_html = f"""
         <div class="screen" style="display:block; padding:0;">
             <table class="trade-table">
                 <thead>
-                    <tr style="background:#000;">
-                        <th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th><th>TSL</th><th>LOCK</th>
-                    </tr>
+                    <tr><th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th><th>TSL</th><th>LOCK</th></tr>
                 </thead>
                 <tbody>{rows}</tbody>
             </table>
@@ -312,6 +289,6 @@ dashboard_html = f"""
 
 st.markdown(dashboard_html, unsafe_allow_html=True)
 
-# Auto-refresh logic
+# Auto-Refresh
 time.sleep(2)
 st.rerun()
