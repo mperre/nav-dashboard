@@ -40,13 +40,12 @@ st.markdown(f"""
     background-color: {bg_color} !important;
 }}
 
-/* LAYOUT: Remove padding/margins to fill screen */
+/* LAYOUT FIX: CLEAN RESET */
+/* We remove negative margins to stop cutting off the top. */
+/* We set height to 100vh to ensure it fills the screen vertically. */
 .block-container {{
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    padding-left: 0.5rem !important;
-    padding-right: 0.5rem !important;
-    margin-top: -60px !important; 
+    padding: 0 !important;
+    margin: 0 !important;
     max-width: 100% !important;
     height: 100vh; 
     min-height: -webkit-fill-available;
@@ -58,20 +57,21 @@ st.markdown(f"""
 header, footer, [data-testid="stToolbar"] {{display: none !important;}}
 
 /* DASHBOARD CONTAINER */
+/* Height = Viewport - Button Height (70px). This prevents bottom gaps. */
 .dashboard-container {{
     height: calc(100vh - 70px);
     width: 100%;
     display: flex;
     flex-direction: column;
     gap: 10px; 
-    padding-top: 15px; 
-    padding-bottom: 5px;
+    padding: 10px; /* Internal padding for aesthetic breathing room */
     box-sizing: border-box;
 }}
 
-/* NAV BOX (Top) - Increased Flex to 5 */
+/* NAV BOX (Top) - Flex 1.5 */
+/* This box takes 60% of the available vertical space */
 .nav-box {{
-    flex: 5; 
+    flex: 1.5; 
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -82,9 +82,10 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     overflow: hidden;
 }}
 
-/* TRADE BOX (Bottom) - Decreased Flex to 3 */
+/* TRADE BOX (Bottom) - Flex 1 */
+/* This box takes 40% of the available vertical space */
 .trade-box {{
-    flex: 3; 
+    flex: 1; 
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
