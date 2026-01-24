@@ -20,6 +20,7 @@ try:
         API_TOKEN = st.secrets["API_TOKEN"]
         ENVIRONMENT = st.secrets["ENVIRONMENT"]
     else:
+        # Fallback for demo
         ACCOUNT_ID = "000-000-0000000-000"
         API_TOKEN = "token"
         ENVIRONMENT = "practice"
@@ -42,19 +43,19 @@ st.markdown(f"""
 
 /* LAYOUT: UNIFORM 10PX BORDER */
 .block-container {{
-    /* 1. Reset Margins/Padding */
+    /* Reset defaults */
     margin: 0 !important;
     
-    /* 2. Pull content up to hide Streamlit header */
+    /* Pull content up to hide the white Streamlit header bar */
     margin-top: -55px !important; 
     
-    /* 3. Add the exact 10px border: Top, Left, Right. Bottom is 0. */
+    /* Create the exact 10px black border on Top, Left, Right */
     padding-top: 10px !important;
     padding-left: 10px !important;
     padding-right: 10px !important;
     padding-bottom: 0 !important;
     
-    /* 4. Force full height */
+    /* Force full viewport height */
     max-width: 100% !important;
     height: 100vh; 
     min-height: -webkit-fill-available;
@@ -66,20 +67,20 @@ st.markdown(f"""
 header, footer, [data-testid="stToolbar"] {{display: none !important;}}
 
 /* DASHBOARD CONTAINER */
-/* Fills the screen, reserving space (80px) at the bottom for the button */
+/* Fills the screen down to the button */
 .dashboard-container {{
-    flex: 1; /* Grow to fill screen */
+    flex: 1; 
     width: 100%;
     display: flex;
     flex-direction: column;
     gap: 10px; 
-    padding-bottom: 80px; /* Space for the fixed button */
+    padding-bottom: 80px; /* Leave space for the fixed button */
     box-sizing: border-box;
     overflow: hidden;
 }}
 
-/* NAV BOX (Top) - THE EXPANDER */
-/* flex: 1 ensures it eats ALL empty space, pushing the bottom box down */
+/* NAV BOX (Top) - EXPANDS */
+/* flex: 1 makes this box grow to fill all empty space */
 .nav-box {{
     flex: 1; 
     background-color: #1e272e;
@@ -93,11 +94,11 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     min-height: 200px; 
 }}
 
-/* TRADE BOX (Bottom) - CONTENT SIZED */
-/* flex: 0 0 auto means it only takes the space it needs for rows */
+/* TRADE BOX (Bottom) - SHRINKS TO FIT */
+/* flex: 0 0 auto makes this box only as tall as its content */
 .trade-box {{
     flex: 0 0 auto;
-    max-height: 40vh; /* Cap it at 40% height so it doesn't takeover */
+    max-height: 40vh; /* Limit height so it doesn't take over */
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -164,7 +165,7 @@ div.stButton > button:hover {{
     overflow: hidden;
 }}
 
-/* FIX FOR NAME ERROR: Double Braces {{ }} */
+/* FIX: Ensure double braces here to prevent NameError */
 .nav-screen-inner {{
     flex: 1;
     width: 100%;
