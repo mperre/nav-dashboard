@@ -43,7 +43,7 @@ css_template = """
     margin: 0 !important;
     margin-top: -55px !important; /* Hide Streamlit Header */
     
-    /* Top Padding remains 35px */
+    /* TOP GAP: 35px */
     padding-top: 35px !important;
     padding-left: 10px !important;
     padding-right: 10px !important;
@@ -60,10 +60,10 @@ css_template = """
 header, footer, [data-testid="stToolbar"] {display: none !important;}
 
 /* DASHBOARD WRAPPER */
-/* HEIGHT CALCULATION: */
-/* 35px (Top Gap) + 5px (Bottom Gap) + 70px (Button) = 110px total deduction */
+/* SYMMETRY CALCULATION: */
+/* 35px (Top Gap) + 35px (Bottom Gap) + 70px (Button) = 140px total deduction */
 .dashboard-container {
-    height: calc(100vh - 110px);
+    height: calc(100vh - 140px);
     width: 100%;
     display: flex;
     flex-direction: column;
