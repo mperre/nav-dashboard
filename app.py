@@ -60,9 +60,7 @@ css_template = f"""
 * {{ -ms-overflow-style: none; scrollbar-width: none; }}
 
 /* -----------------------------------------------------------
-   CONFETTI IFRAME FIX
-   Force the iframe to be fixed/fullscreen but transparent.
-   It sits on top (z-index high) but lets clicks pass through.
+   CONFETTI IFRAME
 ----------------------------------------------------------- */
 iframe {{
     position: fixed !important;
@@ -103,7 +101,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 .block-container {{
     margin: 0 !important;
     margin-top: -55px !important; 
-    /* MOVED UP 8px: Changed 35px to 27px */
     padding: 27px 10px 0 10px !important;
     max-width: 100% !important;
     height: 100vh !important; 
@@ -114,7 +111,8 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 }}
 
 .dashboard-container {{
-    height: calc(100vh - 72px);
+    /* CHANGED: Adjusted from 72px to 74px to reduce total height by 2px */
+    height: calc(100vh - 74px);
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -137,6 +135,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     overflow: hidden;
 }}
 
+/* Top box flexes to fill space. Reducing container height shrinks this box. */
 .nav-box {{ flex: 1; min-height: 200px; }}
 .trade-box {{ flex: 0 0 auto; max-height: 40vh; display: flex; flex-direction: column; }}
 
@@ -171,7 +170,6 @@ st.markdown(css_template, unsafe_allow_html=True)
 # ==========================================
 # 3. JAVASCRIPT INJECTION (CONFETTI)
 # ==========================================
-# Reverted height to 0. CSS 'iframe { position: fixed ... }' handles visibility.
 confetti_html = """
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script>
