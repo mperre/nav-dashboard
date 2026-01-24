@@ -43,8 +43,8 @@ css_template = """
     margin: 0 !important;
     margin-top: -55px !important; /* Hide Streamlit Header */
     
-    /* MOVED DOWN: Increased Top Padding to 25px */
-    padding-top: 25px !important;
+    /* SHIFTED DOWN: Top Padding increased to 35px */
+    padding-top: 35px !important;
     padding-left: 10px !important;
     padding-right: 10px !important;
     padding-bottom: 0 !important;
@@ -60,8 +60,9 @@ css_template = """
 header, footer, [data-testid="stToolbar"] {display: none !important;}
 
 /* DASHBOARD WRAPPER */
-/* SYMMETRY CALCULATION: */
-/* 25px (Top Gap) + 25px (Bottom Gap) + 70px (Button) = 120px */
+/* HEIGHT CALCULATION: */
+/* 35px (Top Gap) + 15px (Bottom Gap) + 70px (Button) = 120px total deduction */
+/* This maintains full screen fit while adjusting the spacing distribution */
 .dashboard-container {
     height: calc(100vh - 120px);
     width: 100%;
