@@ -8,13 +8,14 @@ import time
 st.set_page_config(page_title="COMMAND INTERFACE", layout="wide")
 
 # Initialize session state for the security toggle
+# secure_mode = False means the system is ACTIVE (Visible)
 if 'secure_mode' not in st.session_state:
     st.session_state.secure_mode = False
 
 def toggle_secure():
     st.session_state.secure_mode = not st.session_state.secure_mode
 
-# Secrets handling (with fallback for demo purposes)
+# Secrets handling
 try:
     if "ACCOUNT_ID" in st.secrets:
         ACCOUNT_ID = st.secrets["ACCOUNT_ID"]
@@ -30,7 +31,6 @@ except:
 # ==========================================
 # 2. CSS STYLING (DESKTOP REPLICA)
 # ==========================================
-# Determine background based on mode
 bg_color = "#000000" if st.session_state.secure_mode else "#0d1117"
 
 st.markdown(f"""
@@ -42,7 +42,7 @@ st.markdown(f"""
     background-color: {bg_color} !important;
 }}
 
-/* REMOVE PADDING TO ALLOW FULL WIDTH/HEIGHT */
+/* LAYOUT RESET - REMOVE PADDING TO ALLOW FULL WIDTH/HEIGHT */
 .block-container {{
     padding: 1rem 1rem 0 1rem !important;
     max-width: 100% !important;
@@ -53,21 +53,23 @@ st.markdown(f"""
     gap: 0 !important;
 }}
 
-/* HIDE STREAMLIT UI ELEMENTS */
+/* HIDE DEFAULT STREAMLIT ELEMENTS */
 header, footer, [data-testid="stToolbar"] {{display: none !important;}}
 
-/* DASHBOARD LAYOUT */
+/* DASHBOARD CONTAINER - FLEX COLUMNS */
 .dashboard-container {{
     flex: 1;
     display: flex;
     flex-direction: column;
     width: 100%;
     margin-bottom: 10px;
-    gap: 15px; /* Gap between the two main boxes */
+    gap: 15px;
 }}
 
-/* BOX STYLES */
-.nav-box, .trade-box {{
+/* NAV BOX (Top Panel) - TALLER */
+.nav-box {{
+    flex: 3; /* Takes up 3 parts of space */
+    min-height: 200px;
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 4px;
@@ -78,45 +80,49 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     flex-direction: column;
 }}
 
-/* NAV BOX - TAKES MORE HEIGHT */
-.nav-box {{
-    flex: 2; /* Takes up 2/3 of available space */
-    min-height: 200px;
-}}
-
-/* TRADE BOX - TAKES LESS HEIGHT */
+/* TRADE BOX (Bottom Panel) - SHORTER */
 .trade-box {{
-    flex: 1; /* Takes up 1/3 of available space */
+    flex: 2; /* Takes up 2 parts of space */
     min-height: 150px;
+    background-color: #1e272e;
+    border: 3px solid #485460;
+    border-radius: 4px;
+    padding: 8px;
+    position: relative;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
 }}
 
-/* BUTTON STYLES - FULL WIDTH FOOTER */
-div.stButton {{
+/* BUTTON STYLES - FULL WIDTH STRIP */
+/* This targets the container of the button to ensure it fills width */
+.stButton {{
     width: 100%;
     padding-bottom: 10px;
 }}
-div.stButton > button {{
+/* This targets the actual button element */
+.stButton > button {{
     width: 100% !important;
     background-color: #2f3640 !important;
     color: #808e9b !important;
     border: 1px solid #485460 !important;
     font-family: 'Orbitron', sans-serif !important;
-    height: 60px !important;
-    font-size: 16px !important;
+    height: 50px !important;
+    font-size: 14px !important;
     letter-spacing: 2px;
     border-radius: 4px !important;
     margin-top: 0px !important;
     font-weight: 700;
 }}
-div.stButton > button:hover {{
+.stButton > button:hover {{
     border-color: #0be881 !important;
     color: #0be881 !important;
     background-color: #1e272e !important;
     box-shadow: 0 0 15px rgba(11, 232, 129, 0.1);
 }}
 
-/* TYPOGRAPHY & SCREENS */
+/* TYPOGRAPHY */
 .label-text {{
     font-family: 'Orbitron', sans-serif;
     font-size: 14px;
@@ -133,60 +139,58 @@ div.stButton > button:hover {{
     border: 2px solid #2d3436;
     border-radius: 2px;
     box-shadow: inset 0 0 30px rgba(255,255,255,0.02);
-    flex: 1; /* Fill the rest of the box */
+    flex: 1; 
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
+    overflow: hidden;
 }}
 
 .nav-value {{
     font-family: 'Orbitron', sans-serif;
-    font-size: 15vh; /* Responsive font size */
+    font-size: 15vw; /* Responsive huge text */
     color: #0be881;
     font-weight: 900;
     text-shadow: 0 0 20px rgba(11,232,129,0.4);
     z-index: 2;
+    line-height: 1;
 }}
+@media (min-width: 1000px) {{ .nav-value {{ font-size: 180px; }} }}
 
 /* TABLE STYLES */
 .trade-table {{
     width: 100%;
-    height: 100%;
+    border-collapse: collapse;
     color: #dcdde1;
     font-family: 'Orbitron', sans-serif;
     font-size: 12px;
-    border-collapse: collapse;
 }}
-.trade-table thead {{ display: table-header-group; }}
-.trade-table tbody {{ display: table-row-group; }}
-.trade-table tr {{ line-height: 1.5; }}
 .trade-table th {{ 
     border-bottom: 1px solid #485460; 
-    padding: 10px; 
+    padding: 8px; 
     color: #808e9b; 
     text-align: center;
-    background: #111;
+    background: #050505;
     position: sticky; top: 0;
 }}
 .trade-table td {{ 
     border-bottom: 1px solid #2d3436; 
-    padding: 10px 4px; 
+    padding: 8px 4px; 
     text-align: center; 
 }}
 
-/* SCREWS */
+/* DECORATIVE SCREWS */
 .screw {{
     position: absolute; width: 8px; height: 8px;
     background: #57606f; border-radius: 50%; 
     border: 1px solid #2f3640;
-    box-shadow: inset 1px 1px 2px rgba(0,0,0,0.8);
     z-index: 5;
 }}
 .tl {{top:8px; left:8px;}} .tr {{top:8px; right:8px;}}
 .bl {{bottom:8px; left:8px;}} .br {{bottom:8px; right:8px;}}
 
-/* UTILS */
+/* STATUS COLORS */
 .long {{ color: #0be881; }} .short {{ color: #ff3f34; }}
 .locked {{ color: #0be881; font-weight: bold; text-shadow: 0 0 5px #0be881; }}
 .wait {{ color: #ff9f43; }}
@@ -209,25 +213,23 @@ def get_data():
     return None, None
 
 # ==========================================
-# 4. RENDER UI
+# 4. UI RENDERING
 # ==========================================
 
-# Determine Button Text and Display Content based on Secure Mode
+# Determine State
 if st.session_state.secure_mode:
+    # SECURE MODE (Hidden)
     btn_label = "👁️ ACTIVATE SYSTEM"
-    # Empty black screen content
     nav_str = ""
     rows = ""
-    screen_opacity = "0" # Hide content visually but keep layout
+    screen_opacity = "0"
 else:
+    # ACTIVE MODE (Visible)
     btn_label = "🔒 SECURE SYSTEM"
     screen_opacity = "1"
     
-    # FETCH DATA
     acct, trades = get_data()
-    
-    # Fallback/Dummy Data for Visual Check
-    nav_str = "£750"
+    nav_str = "£750" # Default
     if acct: 
         nav_str = f"£{float(acct['NAV']):,.0f}"
 
@@ -247,7 +249,7 @@ else:
                     if (u > 0 and tv > p) or (u < 0 and tv < p):
                         l_s, l_c = "LOCKED", "locked"
 
-            # CRITICAL: NO INDENTATION in this string
+            # WARNING: KEEP HTML FLUSH LEFT. DO NOT INDENT.
             rows += f"""<tr>
 <td class="{s_cls}">{side}</td>
 <td>{int(u)}</td>
@@ -259,8 +261,8 @@ else:
     else:
         rows = "<tr><td colspan='6' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
 
-# RENDER HTML (Layout remains constant, opacity toggles content)
-# NOTE: The HTML block below is completely flush left to avoid the indentation bug.
+# RENDER HTML
+# The indentation here is deliberately removed to prevent the "Code Block" bug.
 st.markdown(f"""
 <div class="dashboard-container">
 <div class="nav-box">
@@ -268,15 +270,15 @@ st.markdown(f"""
 <div class="screw bl"></div><div class="screw br"></div>
 <div class="label-text">NAV MONITOR</div>
 <div class="screen">
-<div class="nav-value" style="opacity: {screen_opacity}; transition: opacity 0.3s;">{nav_str}</div>
+<div class="nav-value" style="opacity: {screen_opacity}; transition: opacity 0.2s;">{nav_str}</div>
 </div>
 </div>
 <div class="trade-box">
 <div class="screw tl"></div><div class="screw tr"></div>
 <div class="screw bl"></div><div class="screw br"></div>
 <div class="label-text">ACTIVE TRANSMISSIONS</div>
-<div class="screen" style="display:block; padding:0; overflow:auto;">
-<table class="trade-table" style="opacity: {screen_opacity}; transition: opacity 0.3s;">
+<div class="screen" style="display:block; padding:0; overflow-y:auto;">
+<table class="trade-table" style="opacity: {screen_opacity}; transition: opacity 0.2s;">
 <thead>
 <tr style="background:#000;">
 <th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th><th>TSL</th><th>LOCK</th>
@@ -289,10 +291,9 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# THE BUTTON
-# Positioned at the bottom via Python flow, styled full-width via CSS
+# RENDER BUTTON
 st.button(btn_label, on_click=toggle_secure)
 
-# Auto-refresh
+# AUTO REFRESH
 time.sleep(2)
 st.rerun()
