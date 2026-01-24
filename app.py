@@ -27,31 +27,21 @@ except:
     st.stop()
 
 # ==========================================
-# 2. CSS STYLING
+# 2. CSS STYLING (SAFE MODE)
 # ==========================================
-bg_color = "#000000" if st.session_state.secure_mode else "#0d1117"
-
-# WE USE A STANDARD STRING + REPLACE TO PREVENT PYTHON f-STRING CRASHES
-css_template = """
+# We define the CSS as a standard string (NO f-string) to prevent crashes.
+main_css = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
 
-/* GLOBAL RESET */
-.stApp {
-    background-color: BG_COLOR_PLACEHOLDER !important;
-}
-
-/* LAYOUT: UNIFORM 10PX BORDER (TOP/LEFT/RIGHT) */
+/* LAYOUT: UNIFORM 10PX BORDER */
 .block-container {
     margin: 0 !important;
     margin-top: -55px !important; /* Hide Streamlit Header */
-    
-    /* 10px Border on Top and Sides, 0 on Bottom */
     padding-top: 10px !important;
     padding-left: 10px !important;
     padding-right: 10px !important;
     padding-bottom: 0 !important;
-    
     max-width: 100% !important;
     height: 100vh; 
     min-height: -webkit-fill-available;
@@ -74,7 +64,7 @@ header, footer, [data-testid="stToolbar"] {display: none !important;}
     overflow: hidden;
 }
 
-/* NAV BOX (Top) - EXPANDS TO FILL SPACE */
+/* NAV BOX (Top) - TAKES REMAINING SPACE */
 .nav-box {
     flex: 1; 
     background-color: #1e272e;
@@ -88,7 +78,7 @@ header, footer, [data-testid="stToolbar"] {display: none !important;}
     min-height: 200px; 
 }
 
-/* TRADE BOX (Bottom) - SHRINKS TO CONTENT */
+/* TRADE BOX (Bottom) - AUTO HEIGHT */
 .trade-box {
     flex: 0 0 auto;
     max-height: 40vh; 
@@ -102,7 +92,7 @@ header, footer, [data-testid="stToolbar"] {display: none !important;}
     overflow-y: auto; 
 }
 
-/* BUTTON STYLING (FIXED FOOTER) */
+/* BUTTON STYLING */
 div.stButton {
     position: fixed;
     bottom: 0;
@@ -111,7 +101,6 @@ div.stButton {
     z-index: 9999;
     padding: 0 !important;
     margin: 0 !important;
-    background-color: BG_COLOR_PLACEHOLDER;
 }
 
 div.stButton > button {
@@ -161,9 +150,6 @@ div.stButton > button:hover {
 .nav-screen-inner {
     flex: 1;
     width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .nav-value {
@@ -212,9 +198,17 @@ div.stButton > button:hover {
 .wait { color: #ff9f43; }
 </style>
 """
+st.markdown(main_css, unsafe_allow_html=True)
 
-# Inject the background color safely
-st.markdown(css_template.replace("BG_COLOR_PLACEHOLDER", bg_color), unsafe_allow_html=True)
+# DYNAMIC BACKGROUND COLOR (Injected separately)
+bg_color = "#000000" if st.session_state.secure_mode else "#0d1117"
+st.markdown(
+    f"""<style>
+    .stApp {{ background-color: {bg_color} !important; }}
+    div.stButton {{ background-color: {bg_color} !important; }}
+    </style>""", 
+    unsafe_allow_html=True
+)
 
 # ==========================================
 # 3. DATA & LOGIC
@@ -235,7 +229,6 @@ def get_data():
 # 4. UI RENDER
 # ==========================================
 
-# RENDER BUTTON
 if st.session_state.secure_mode:
     btn_label = "👁️ ACTIVATE SYSTEM"
 else:
@@ -243,7 +236,6 @@ else:
 
 st.button(btn_label, on_click=toggle_secure)
 
-# RENDER CONTENT ONLY IF NOT SECURE
 if not st.session_state.secure_mode:
     acct, trades = get_data()
     nav_str = "£750" 
@@ -279,7 +271,8 @@ if not st.session_state.secure_mode:
         rows = "<tr><td colspan='6' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
 
     # HTML STRING - FLUSH LEFT
-    dashboard_html = f"""
+    # We use a variable to ensure clean rendering
+    html_content = f"""
 <div class="dashboard-container">
 <div class="nav-box">
 <div class="screw tl"></div><div class="screw tr"></div>
@@ -306,7 +299,7 @@ if not st.session_state.secure_mode:
 </div>
 </div>
 """
-    st.markdown(dashboard_html, unsafe_allow_html=True)
+    st.markdown(html_content, unsafe_allow_html=True)
 
     time.sleep(2)
     st.rerun()
