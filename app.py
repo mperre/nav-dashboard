@@ -43,8 +43,9 @@ css_template = """
     margin: 0 !important;
     margin-top: -55px !important; /* Hide Streamlit Header */
     
-    /* Top Padding remains 35px */
-    padding-top: 35px !important;
+    /* TOP GAP: 30px */
+    padding-top: 30px !important;
+    
     padding-left: 10px !important;
     padding-right: 10px !important;
     padding-bottom: 0 !important;
@@ -60,10 +61,10 @@ css_template = """
 header, footer, [data-testid="stToolbar"] {display: none !important;}
 
 /* DASHBOARD WRAPPER */
-/* HEIGHT CALCULATION: */
-/* Reduced deduction by 10px (110px -> 100px) to tighten bottom spacing */
+/* CALCULATION: */
+/* 30px (Top Gap) + 25px (Bottom Gap) + 70px (Button) = 125px total deduction */
 .dashboard-container {
-    height: calc(100vh - 100px);
+    height: calc(100vh - 125px);
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -234,12 +235,8 @@ def get_data():
 # 4. UI RENDER
 # ==========================================
 
-if st.session_state.secure_mode:
-    btn_label = "👁️ ACTIVATE SYSTEM"
-else:
-    btn_label = "🔒 SECURE SYSTEM"
-
-st.button(btn_label, on_click=toggle_secure)
+# BUTTON - ALWAYS SAYS "SECURE SYSTEM"
+st.button("🔒 SECURE SYSTEM", on_click=toggle_secure)
 
 if not st.session_state.secure_mode:
     acct, trades = get_data()
