@@ -45,10 +45,10 @@ st.markdown(f"""
     /* 1. Reset Margins/Padding */
     margin: 0 !important;
     
-    /* 2. Pull content up to hide Streamlit header (approx 50-60px) */
+    /* 2. Pull content up to hide Streamlit header */
     margin-top: -55px !important; 
     
-    /* 3. Add the exact 10px border you requested */
+    /* 3. Add the exact 10px border: Top, Left, Right. Bottom is 0. */
     padding-top: 10px !important;
     padding-left: 10px !important;
     padding-right: 10px !important;
