@@ -3,48 +3,49 @@ import requests
 import time
 
 # ==========================================
-# 1. CONFIGURATION
+# 1. CONFIGURATION & SECRETS
 # ==========================================
 try:
     ACCOUNT_ID = st.secrets["ACCOUNT_ID"]
     API_TOKEN = st.secrets["API_TOKEN"]
     ENVIRONMENT = st.secrets["ENVIRONMENT"]
 except FileNotFoundError:
-    st.error("Secrets missing. Check Streamlit settings.")
+    st.error("Secrets not found. Please check your Streamlit settings.")
     st.stop()
 
 st.set_page_config(page_title="COMMAND INTERFACE", layout="centered")
 
 # ==========================================
-# 2. EXACT STYLE MATCH (CSS)
+# 2. EXACT CSS STYLING (Desktop Replica)
 # ==========================================
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
 
-/* BACKGROUND & GLOBAL */
+/* GLOBAL BACKGROUND - Deep Dark Slate */
 .stApp {
-    background-color: #000000 !important;
+    background-color: #0d1117 !important;
 }
 .block-container {
     padding-top: 1rem;
     padding-bottom: 5rem;
-    max-width: 450px;
+    max-width: 450px; /* Mobile width constraint */
 }
 header {visibility: hidden;}
+footer {visibility: hidden;}
 
-/* METAL PANEL CONTAINER */
+/* THE METAL PANEL */
 .metal-panel {
-    background-color: #1e272e;
+    background-color: #1e272e; /* Dark Slate Blue */
     border: 3px solid #485460;
-    border-radius: 8px;
+    border-radius: 6px;
     padding: 15px;
     position: relative;
-    margin-bottom: 15px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.6);
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.6);
 }
 
-/* SCREWS */
+/* SCREWS IN CORNERS */
 .screw {
     position: absolute;
     width: 8px;
@@ -59,70 +60,69 @@ header {visibility: hidden;}
 .bl { bottom: 6px; left: 6px; }
 .br { bottom: 6px; right: 6px; }
 
-/* BLACK SCREEN INSET */
+/* BLACK INSET SCREEN */
 .black-screen {
     background-color: #000000;
     border: 2px solid #2d3436;
     margin-top: 5px;
-    padding: 10px;
+    padding: 15px 5px;
     text-align: center;
     box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.05);
 }
 
-/* TYPOGRAPHY */
+/* TEXT STYLES */
 .label-text {
     font-family: 'Orbitron', sans-serif;
-    font-size: 12px;
-    color: #808e9b;
-    font-weight: 700;
+    font-size: 11px;
+    color: #808e9b; /* Muted Grey-Blue */
+    font-weight: 800;
     letter-spacing: 1px;
     text-transform: uppercase;
-    margin-bottom: 2px;
-    text-shadow: 0px 1px 2px rgba(0,0,0,0.8);
+    text-shadow: 1px 1px 0px #000;
 }
 
 .nav-text {
     font-family: 'Orbitron', sans-serif;
-    font-size: 55px;
-    color: #0be881;
+    font-size: 60px;
+    color: #0be881; /* Bright Green */
     font-weight: 900;
-    text-shadow: 0 0 15px rgba(11, 232, 129, 0.3);
-    margin: 15px 0;
+    text-shadow: 0 0 20px rgba(11, 232, 129, 0.3);
+    margin: 10px 0;
 }
 
-/* TABLE STYLING */
+/* TABLE STYLES */
 .trade-table {
     width: 100%;
     border-collapse: collapse;
     font-family: 'Orbitron', sans-serif;
-    font-size: 11px;
+    font-size: 10px;
     color: #dcdde1;
 }
 .trade-table th {
     color: #808e9b;
-    padding: 8px 4px;
+    padding: 6px 2px;
     border-bottom: 1px solid #485460;
-    font-weight: bold;
     text-align: center;
+    font-weight: 700;
 }
 .trade-table td {
-    padding: 10px 4px;
+    padding: 8px 2px;
     text-align: center;
     border-bottom: 1px solid #2d3436;
 }
-/* STATUS COLORS */
+
+/* COLORS */
 .long { color: #0be881; }
 .short { color: #ff3f34; }
 .profit-yes { color: #0be881; font-weight: bold; text-shadow: 0 0 5px #0be881; }
 .profit-wait { color: #ff9f43; }
-
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 3. DATA LOGIC
+# 3. DATA ENGINE
 # ==========================================
-def get_oanda_data():
+def get_data():
     base = "https://api-fxtrade.oanda.com/v3/accounts" if ENVIRONMENT == "live" else "https://api-fxpractice.oanda.com/v3/accounts"
     headers = {"Authorization": f"Bearer {API_TOKEN}"}
     try:
@@ -135,90 +135,86 @@ def get_oanda_data():
     return None, None
 
 # ==========================================
-# 4. DRAW UI
+# 4. MAIN LOOP (FLUSH LEFT HTML)
 # ==========================================
 placeholder = st.empty()
 
 while True:
-    acct, trades = get_oanda_data()
+    acct, trades = get_data()
     
     with placeholder.container():
-        # --- NAV PANEL ---
-        nav_display = "---"
+        
+        # --- TOP PANEL: NAV ---
+        nav_val = "---"
         if acct:
-            nav_display = f"£{float(acct['NAV']):,.0f}"
-            
+            nav_val = f"£{float(acct['NAV']):,.0f}"
+
+        # HTML MUST BE FLUSH LEFT TO AVOID CODE BLOCKS
         st.markdown(f"""
 <div class="metal-panel">
 <div class="screw tl"></div><div class="screw tr"></div>
 <div class="screw bl"></div><div class="screw br"></div>
 <div class="label-text">NAV MONITOR</div>
 <div class="black-screen">
-<div class="nav-text">{nav_display}</div>
+<div class="nav-text">{nav_val}</div>
 </div>
 </div>
 """, unsafe_allow_html=True)
 
-        # --- TRADES PANEL ---
-        table_rows = ""
+        # --- BOTTOM PANEL: TRADES ---
+        rows = ""
         if trades:
             for t in trades:
-                # Extract Data
                 units = float(t['currentUnits'])
                 entry = float(t.get('price', 0))
                 pl = float(t['unrealizedPL'])
                 
-                # Logic
+                # Colors & Direction
                 side = "LONG" if units > 0 else "SHORT"
-                side_cls = "long" if units > 0 else "short"
-                pl_col = "#0be881" if pl >= 0 else "#ff9f43"
+                side_class = "long" if units > 0 else "short"
+                pl_color = "#0be881" if pl >= 0 else "#ff9f43"
                 
-                # TSL & Lock Logic
-                tsl_show = "-"
-                lock_status = "WAIT"
-                lock_cls = "profit-wait"
+                # TSL Lock Logic
+                tsl_str = "-"
+                lock_str = "WAIT"
+                lock_class = "profit-wait"
                 
                 if 'trailingStopLossOrder' in t:
                     trigger = t['trailingStopLossOrder'].get('triggerPrice')
                     if trigger:
                         trig_val = float(trigger)
-                        tsl_show = f"{trig_val:.3f}"
-                        # Check if profit locked
+                        tsl_str = f"{trig_val:.3f}"
+                        # Logic: Is TSL better than Entry?
                         if (units > 0 and trig_val > entry) or (units < 0 and trig_val < entry):
-                            lock_status = "LOCKED"
-                            lock_cls = "profit-yes"
+                            lock_str = "LOCKED"
+                            lock_class = "profit-yes"
 
-                table_rows += f"""
+                rows += f"""
                 <tr>
-                    <td class="{side_cls}">{side}</td>
+                    <td class="{side_class}">{side}</td>
                     <td>{int(units)}</td>
                     <td>{t['instrument'].replace('_','/')}</td>
-                    <td style="color:{pl_col}">£{pl:.2f}</td>
-                    <td>{tsl_show}</td>
-                    <td class="{lock_cls}">{lock_status}</td>
-                </tr>
-                """
+                    <td style="color:{pl_color}">£{pl:.2f}</td>
+                    <td>{tsl_str}</td>
+                    <td class="{lock_class}">{lock_str}</td>
+                </tr>"""
         else:
-            table_rows = """
-            <tr><td colspan="6" style="padding:25px; color:#57606f; font-style:italic;">
-            NO SIGNAL DETECTED
-            </td></tr>
-            """
+            rows = """<tr><td colspan="6" style="padding:30px; color:#57606f; font-style:italic;">NO SIGNAL DETECTED</td></tr>"""
 
         st.markdown(f"""
 <div class="metal-panel">
 <div class="screw tl"></div><div class="screw tr"></div>
 <div class="screw bl"></div><div class="screw br"></div>
 <div class="label-text">ACTIVE TRANSMISSIONS</div>
-<div class="black-screen" style="padding: 0;">
+<div class="black-screen" style="padding:0;">
 <table class="trade-table">
 <thead>
-<tr style="background-color: #151515;">
-<th>DIR</th> <th>UNITS</th> <th>INST</th> <th>P/L</th> <th>TSL</th> <th>LOCK</th>
+<tr style="background-color:#151515;">
+<th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th><th>TSL</th><th>LOCK</th>
 </tr>
 </thead>
 <tbody>
-{table_rows}
+{rows}
 </tbody>
 </table>
 </div>
