@@ -50,11 +50,11 @@ if st.session_state.trigger_haptic:
 if st.session_state.secure_mode:
     dash_opacity = "0"
     dash_pointer = "none"
-    dash_transition = "opacity 0s" # INSTANT BLACK
+    dash_transition = "opacity 0s" 
 else:
     dash_opacity = "1"
     dash_pointer = "auto"
-    dash_transition = "opacity 0.5s ease-in" # FADE REVEAL
+    dash_transition = "opacity 0.5s ease-in" 
 
 css_template = f"""
 <style>
@@ -112,8 +112,8 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 }}
 
 .dashboard-container {{
-    /* CHANGED: Increased deduction from 45px to 80px to lift bottom up */
-    height: calc(100vh - 80px);
+    /* CHANGED: Adjusted from 80px to 72px to lower the box by 8px */
+    height: calc(100vh - 72px);
     width: 100%;
     display: flex;
     flex-direction: column;
