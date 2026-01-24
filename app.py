@@ -7,7 +7,6 @@ import time
 # ==========================================
 st.set_page_config(page_title="COMMAND INTERFACE", layout="wide")
 
-# Initialize Session State for the Secure Toggle
 if 'secure_mode' not in st.session_state:
     st.session_state.secure_mode = False
 
@@ -21,7 +20,6 @@ try:
         API_TOKEN = st.secrets["API_TOKEN"]
         ENVIRONMENT = st.secrets["ENVIRONMENT"]
     else:
-        # Fallback for local testing
         ACCOUNT_ID = "000-000-0000000-000"
         API_TOKEN = "token"
         ENVIRONMENT = "practice"
@@ -29,43 +27,34 @@ except:
     st.stop()
 
 # ==========================================
-# 2. CSS STYLING (THE SCI-FI LOOK + INVISIBLE BUTTON)
+# 2. CSS STYLING
 # ==========================================
-# Determine overlay color: Black if secure, Transparent if not.
 overlay_color = "#000000" if st.session_state.secure_mode else "rgba(0,0,0,0)"
 
 css_template = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
 
-/* GLOBAL RESET */
 .stApp {{
     background-color: #0d1117 !important;
 }}
 
-/* -----------------------------------------------------------
-   FULL SCREEN OVERLAY BUTTON
-   This forces the Streamlit button to cover the ENTIRE screen.
------------------------------------------------------------ */
+/* FULL SCREEN TOGGLE BUTTON */
 div.stButton > button {{
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    z-index: 999999 !important; /* Sit on top of everything */
-    
+    z-index: 999999 !important;
     background-color: {overlay_color} !important;
-    
     border: none !important;
-    color: transparent !important; /* Hide text */
+    color: transparent !important;
     cursor: default !important;
     border-radius: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
 }}
-
-/* Remove hover/active effects so it doesn't flash */
 div.stButton > button:hover, div.stButton > button:active, div.stButton > button:focus {{
     background-color: {overlay_color} !important;
     border: none !important;
@@ -73,25 +62,21 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     box-shadow: none !important;
 }}
 
-/* -----------------------------------------------------------
-   DASHBOARD LAYOUT (The "Sci-Fi" Look)
------------------------------------------------------------ */
+/* DASHBOARD LAYOUT */
 .block-container {{
     margin: 0 !important;
     margin-top: -55px !important; 
-    padding: 35px 10px 0 10px !important; /* 35px Top Padding */
+    padding: 35px 10px 0 10px !important;
     max-width: 100% !important;
     height: 100vh; 
     min-height: -webkit-fill-available;
     display: flex;
     flex-direction: column;
 }}
-
 header, footer, [data-testid="stToolbar"] {{display: none !important;}}
 
-/* FLEX CONTAINER FOR BOXES */
 .dashboard-container {{
-    height: calc(100vh - 45px); /* Full height minus top spacing */
+    height: calc(100vh - 45px);
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -99,7 +84,6 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     box-sizing: border-box;
 }}
 
-/* BOX STYLES */
 .nav-box, .trade-box {{
     background-color: #1e272e;
     border: 3px solid #485460;
@@ -110,11 +94,9 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     flex-direction: column;
     overflow: hidden;
 }}
-
 .nav-box {{ flex: 1; min-height: 200px; }}
 .trade-box {{ flex: 0 0 auto; max-height: 40vh; }}
 
-/* SCREEN EFFECT */
 .screen {{
     background-color: #000000;
     border: 2px solid #2d3436;
@@ -129,7 +111,6 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     height: 100%;
 }}
 
-/* TYPOGRAPHY */
 .label-text {{
     font-family: 'Orbitron', sans-serif;
     font-size: 12px;
@@ -140,7 +121,6 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     text-transform: uppercase;
     padding-left: 4px;
 }}
-
 .nav-value {{
     font-family: 'Orbitron', sans-serif;
     color: #0be881;
@@ -150,7 +130,7 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     margin-top: -10px; 
 }}
 
-/* CUSTOM TABLE STYLING */
+/* TABLE */
 .trade-table {{
     width: 100%;
     color: #dcdde1;
@@ -172,7 +152,7 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     text-align: center; 
 }}
 
-/* DECORATIVE SCREWS */
+/* SCREWS */
 .screw {{
     position: absolute; width: 6px; height: 6px;
     background: #57606f; border-radius: 50%; 
@@ -186,9 +166,8 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
 st.markdown(css_template, unsafe_allow_html=True)
 
 # ==========================================
-# 3. RENDER THE FULL-SCREEN BUTTON
+# 3. RENDER TOGGLE BUTTON
 # ==========================================
-# This button is technically "on top" of everything but transparent in secure_mode=False
 st.button(" ", on_click=toggle_secure, key="overlay_btn")
 
 # ==========================================
@@ -207,36 +186,30 @@ def get_data():
     return None, None
 
 # ==========================================
-# 5. UI RENDER (BEHIND THE BUTTON)
+# 5. UI RENDER
 # ==========================================
 acct, trades = get_data()
 
-# --- NAV LOGIC ---
 nav_str = "£0" 
 if acct: 
     nav_str = f"£{float(acct['NAV']):,.0f}"
 
-# Font Scaling
 char_len = len(nav_str)
 if char_len <= 4: f_size = "min(25vh, 25vw)"
 elif char_len <= 6: f_size = "min(19vh, 19vw)"
 elif char_len <= 7: f_size = "min(15vh, 15vw)"
 else: f_size = "min(12vh, 12vw)"
 
-# --- TRADES LOGIC ---
 rows = ""
 if trades:
     for t in trades:
         u = float(t['currentUnits'])
         entry = float(t.get('price', 0))
         pl = float(t['unrealizedPL'])
-        
-        # Formatting
         side = "LONG" if u > 0 else "SHORT"
         pl_color = "#0be881" if pl >= 0 else "#ff9f43"
         dir_color = "#0be881" if u > 0 else "#ff3f34"
         
-        # TSL Logic
         tsl, l_s, l_c = "-", "WAIT", "#ff9f43"
         if 'trailingStopLossOrder' in t:
             trig = t['trailingStopLossOrder'].get('triggerPrice')
@@ -247,41 +220,40 @@ if trades:
                     l_s, l_c = "LOCKED", "#0be881"
 
         rows += f"""<tr>
-            <td style="color: {dir_color}">{side}</td>
-            <td>{int(u)}</td>
-            <td>{t['instrument'].replace('_','/')}</td>
-            <td style="color:{pl_color}">£{pl:.2f}</td>
-            <td>{tsl}</td>
-            <td style="color:{l_c}; font-weight:bold;">{l_s}</td>
-        </tr>"""
+<td style="color: {dir_color}">{side}</td>
+<td>{int(u)}</td>
+<td>{t['instrument'].replace('_','/')}</td>
+<td style="color:{pl_color}">£{pl:.2f}</td>
+<td>{tsl}</td>
+<td style="color:{l_c}; font-weight:bold;">{l_s}</td>
+</tr>"""
 else:
     rows = "<tr><td colspan='6' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
 
-# --- DASHBOARD HTML STRUCTURE ---
+# --- HTML WITHOUT INDENTATION TO PREVENT CODE BLOCK RENDERING ---
 dashboard_html = f"""
 <div class="dashboard-container">
-    <div class="nav-box">
-        <div class="screw tl"></div><div class="screw tr"></div>
-        <div class="screw bl"></div><div class="screw br"></div>
-        <div class="label-text">NAV MONITOR</div>
-        <div class="screen">
-             <div class="nav-value" style="font-size: {f_size};">{nav_str}</div>
-        </div>
-    </div>
-
-    <div class="trade-box">
-        <div class="screw tl"></div><div class="screw tr"></div>
-        <div class="screw bl"></div><div class="screw br"></div>
-        <div class="label-text">ACTIVE TRANSMISSIONS</div>
-        <div class="screen" style="display:block; padding:0;">
-            <table class="trade-table">
-                <thead>
-                    <tr><th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th><th>TSL</th><th>LOCK</th></tr>
-                </thead>
-                <tbody>{rows}</tbody>
-            </table>
-        </div>
-    </div>
+<div class="nav-box">
+<div class="screw tl"></div><div class="screw tr"></div>
+<div class="screw bl"></div><div class="screw br"></div>
+<div class="label-text">NAV MONITOR</div>
+<div class="screen">
+<div class="nav-value" style="font-size: {f_size};">{nav_str}</div>
+</div>
+</div>
+<div class="trade-box">
+<div class="screw tl"></div><div class="screw tr"></div>
+<div class="screw bl"></div><div class="screw br"></div>
+<div class="label-text">ACTIVE TRANSMISSIONS</div>
+<div class="screen" style="display:block; padding:0;">
+<table class="trade-table">
+<thead>
+<tr><th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th><th>TSL</th><th>LOCK</th></tr>
+</thead>
+<tbody>{rows}</tbody>
+</table>
+</div>
+</div>
 </div>
 """
 
