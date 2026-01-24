@@ -31,8 +31,8 @@ except:
 # ==========================================
 # 2. CSS STYLING
 # ==========================================
-# Logic: If secure_mode is True, overlay is BLACK. If False, it is TRANSPARENT.
-overlay_bg = "#000000" if st.session_state.secure_mode else "rgba(0,0,0,0)"
+# Logic: We simply toggle the DISPLAY property of the black curtain div.
+curtain_display = "block" if st.session_state.secure_mode else "none"
 
 css_template = f"""
 <style>
@@ -54,7 +54,8 @@ header {{visibility: hidden !important;}}
 [data-testid="stStatusWidget"] {{display: none !important;}}
 
 /* -----------------------------------------------------------
-   FULL SCREEN TOGGLE BUTTON
+   1. THE TRANSPARENT INTERACTION LAYER (BUTTON)
+   This button is ALWAYS transparent. It sits on top of everything.
 ----------------------------------------------------------- */
 div.stButton > button {{
     position: fixed !important;
@@ -62,9 +63,9 @@ div.stButton > button {{
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    z-index: 999999 !important; /* Topmost layer */
+    z-index: 999999 !important; /* Topmost layer (Interaction) */
     
-    background-color: {overlay_bg} !important;
+    background-color: transparent !important; /* Always transparent */
     
     border: none !important;
     color: transparent !important;
@@ -74,16 +75,32 @@ div.stButton > button {{
     padding: 0 !important;
 }}
 
-/* Remove hover effects to prevent flickering */
+/* Remove hover effects */
 div.stButton > button:hover, div.stButton > button:active, div.stButton > button:focus {{
-    background-color: {overlay_bg} !important;
+    background-color: transparent !important;
     border: none !important;
     color: transparent !important;
     box-shadow: none !important;
 }}
 
 /* -----------------------------------------------------------
-   DASHBOARD STYLING
+   2. THE BLACK CURTAIN (VISUAL LAYER)
+   This is a pure HTML div that sits between the dashboard and the button.
+   It doesn't flicker because it's static HTML, not a widget.
+----------------------------------------------------------- */
+#black-curtain {{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000000;
+    z-index: 999998; /* Below button, Above dashboard */
+    display: {curtain_display}; /* Controlled by Python */
+}}
+
+/* -----------------------------------------------------------
+   3. DASHBOARD STYLING
 ----------------------------------------------------------- */
 .block-container {{
     margin: 0 !important;
@@ -193,8 +210,13 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 st.markdown(css_template, unsafe_allow_html=True)
 
 # ==========================================
-# 3. RENDER TOGGLE BUTTON (COVERS EVERYTHING)
+# 3. RENDER LAYERS
 # ==========================================
+
+# LAYER A: THE STATIC BLACK CURTAIN (Prevents Flicker)
+st.markdown('<div id="black-curtain"></div>', unsafe_allow_html=True)
+
+# LAYER B: THE INTERACTIVE BUTTON (Transparent, On Top)
 st.button(" ", on_click=toggle_secure, key="overlay_btn")
 
 # ==========================================
@@ -217,7 +239,6 @@ def get_data():
 # ==========================================
 acct, trades = get_data()
 
-# --- NAV LOGIC ---
 nav_str = "£0" 
 if acct: 
     nav_str = f"£{float(acct['NAV']):,.0f}"
