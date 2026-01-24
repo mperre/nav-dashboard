@@ -61,9 +61,9 @@ header, footer, [data-testid="stToolbar"] {display: none !important;}
 
 /* DASHBOARD WRAPPER */
 /* HEIGHT CALCULATION: */
-/* 35px (Top Gap) + 5px (Bottom Gap) + 70px (Button) = 110px total deduction */
+/* Reduced deduction by 10px (110px -> 100px) to tighten bottom spacing */
 .dashboard-container {
-    height: calc(100vh - 110px);
+    height: calc(100vh - 100px);
     width: 100%;
     display: flex;
     flex-direction: column;
