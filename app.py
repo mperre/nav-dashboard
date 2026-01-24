@@ -41,14 +41,11 @@ css_template = """
 /* LAYOUT CONTAINER */
 .block-container {
     margin: 0 !important;
-    margin-top: -55px !important; /* Hide Streamlit Header */
-    
-    /* TOP SPACING: 35px */
+    margin-top: -55px !important; 
     padding-top: 35px !important;
     padding-left: 10px !important;
     padding-right: 10px !important;
     padding-bottom: 0 !important;
-    
     max-width: 100% !important;
     height: 100vh; 
     min-height: -webkit-fill-available;
@@ -60,11 +57,8 @@ css_template = """
 header, footer, [data-testid="stToolbar"] {display: none !important;}
 
 /* DASHBOARD WRAPPER */
-/* CALCULATION: */
-/* 105px would be perfectly flush (35px top + 70px button). */
-/* We use 95px to extend it 10px further down (reducing the gap/creating overlap). */
 .dashboard-container {
-    height: calc(100vh - 95px);
+    height: calc(100vh - 95px); /* Matches your requested gap logic */
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -72,7 +66,7 @@ header, footer, [data-testid="stToolbar"] {display: none !important;}
     box-sizing: border-box;
 }
 
-/* NAV BOX (TOP) - DOMINANT EXPANDER */
+/* NAV BOX */
 .nav-box {
     flex: 1; 
     background-color: #1e272e;
@@ -86,7 +80,7 @@ header, footer, [data-testid="stToolbar"] {display: none !important;}
     min-height: 200px; 
 }
 
-/* TRADE BOX (BOTTOM) - COMPACT */
+/* TRADE BOX */
 .trade-box {
     flex: 0 0 auto; 
     max-height: 40vh; 
@@ -100,7 +94,7 @@ header, footer, [data-testid="stToolbar"] {display: none !important;}
     overflow-y: auto; 
 }
 
-/* BUTTON STYLING (FIXED FOOTER) */
+/* BUTTON STYLING */
 div.stButton {
     position: fixed;
     bottom: 0;
@@ -166,12 +160,12 @@ div.stButton > button:hover {
 
 .nav-value {
     font-family: 'Orbitron', sans-serif;
-    font-size: min(25vh, 25vw); 
     color: #0be881;
     font-weight: 900;
     text-shadow: 0 0 20px rgba(11,232,129,0.4);
     line-height: 1;
     margin-top: -10px; 
+    /* Font size is now handled inline by Python logic */
 }
 
 /* TABLE */
@@ -241,8 +235,22 @@ st.button("🔒 SECURE SYSTEM", on_click=toggle_secure)
 if not st.session_state.secure_mode:
     acct, trades = get_data()
     nav_str = "£750" 
+    
     if acct: 
         nav_str = f"£{float(acct['NAV']):,.0f}"
+
+    # --- DYNAMIC FONT SCALING LOGIC ---
+    # Calculates character length and adjusts vh/vw units accordingly
+    char_len = len(nav_str)
+    if char_len <= 4:
+        f_size = "min(25vh, 25vw)"
+    elif char_len <= 6:
+        f_size = "min(19vh, 19vw)"
+    elif char_len <= 7:
+        f_size = "min(15vh, 15vw)"
+    else:
+        f_size = "min(12vh, 12vw)"
+    # ----------------------------------
 
     rows = ""
     if trades:
@@ -260,7 +268,6 @@ if not st.session_state.secure_mode:
                     if (u > 0 and tv > p) or (u < 0 and tv < p):
                         l_s, l_c = "LOCKED", "locked"
 
-            # FLUSH LEFT HTML
             rows += f"""<tr>
 <td class="{s_cls}">{side}</td>
 <td>{int(u)}</td>
@@ -273,6 +280,7 @@ if not st.session_state.secure_mode:
         rows = "<tr><td colspan='6' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
 
     # HTML STRING - FLUSH LEFT
+    # Injected style="font-size: {f_size}" into the nav-value div
     dashboard_html = f"""
 <div class="dashboard-container">
 <div class="nav-box">
@@ -280,7 +288,7 @@ if not st.session_state.secure_mode:
 <div class="screw bl"></div><div class="screw br"></div>
 <div class="label-text">NAV MONITOR</div>
 <div class="screen nav-screen-inner">
-<div class="nav-value">{nav_str}</div>
+<div class="nav-value" style="font-size: {f_size};">{nav_str}</div>
 </div>
 </div>
 <div class="trade-box">
