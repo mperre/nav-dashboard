@@ -27,21 +27,32 @@ except:
     st.stop()
 
 # ==========================================
-# 2. CSS STYLING (SAFE MODE)
+# 2. CSS STYLING (Standard String - No Crash)
 # ==========================================
-# We define the CSS as a standard string (NO f-string) to prevent crashes.
-main_css = """
+# We use a standard string (not f-string) to avoid syntax conflicts with CSS brackets.
+css_template = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
 
-/* LAYOUT: UNIFORM 10PX BORDER */
+/* GLOBAL RESET */
+.stApp {
+    background-color: BG_COLOR_PLACEHOLDER !important;
+}
+
+/* LAYOUT CONTAINER */
 .block-container {
     margin: 0 !important;
     margin-top: -55px !important; /* Hide Streamlit Header */
+    
+    /* UNIFORM BORDERS */
+    /* 10px Top, 10px Left, 10px Right */
     padding-top: 10px !important;
     padding-left: 10px !important;
     padding-right: 10px !important;
+    
+    /* Bottom padding is 0 because the button is an overlay */
     padding-bottom: 0 !important;
+    
     max-width: 100% !important;
     height: 100vh; 
     min-height: -webkit-fill-available;
@@ -52,21 +63,21 @@ main_css = """
 /* Hide standard elements */
 header, footer, [data-testid="stToolbar"] {display: none !important;}
 
-/* DASHBOARD CONTAINER */
+/* DASHBOARD WRAPPER */
+/* Calculates remaining height to ensure bottom gap matches top gap */
+/* 100vh - 70px (Button) - 10px (Desired Gap) = 80px subtraction */
 .dashboard-container {
-    flex: 1; 
+    height: calc(100vh - 80px);
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 10px; 
-    padding-bottom: 80px; /* Space for fixed button */
+    gap: 10px; /* Gap between the two boxes */
     box-sizing: border-box;
-    overflow: hidden;
 }
 
-/* NAV BOX (Top) - TAKES REMAINING SPACE */
+/* NAV BOX (TOP) - DOMINANT EXPANDER */
 .nav-box {
-    flex: 1; 
+    flex: 1; /* Grows to occupy all empty space */
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -78,10 +89,10 @@ header, footer, [data-testid="stToolbar"] {display: none !important;}
     min-height: 200px; 
 }
 
-/* TRADE BOX (Bottom) - AUTO HEIGHT */
+/* TRADE BOX (BOTTOM) - COMPACT */
 .trade-box {
-    flex: 0 0 auto;
-    max-height: 40vh; 
+    flex: 0 0 auto; /* Only takes required height */
+    max-height: 40vh; /* Limits max growth */
     background-color: #1e272e;
     border: 3px solid #485460;
     border-radius: 6px;
@@ -92,7 +103,7 @@ header, footer, [data-testid="stToolbar"] {display: none !important;}
     overflow-y: auto; 
 }
 
-/* BUTTON STYLING */
+/* BUTTON STYLING (FIXED FOOTER) */
 div.stButton {
     position: fixed;
     bottom: 0;
@@ -101,6 +112,7 @@ div.stButton {
     z-index: 9999;
     padding: 0 !important;
     margin: 0 !important;
+    background-color: BG_COLOR_PLACEHOLDER; /* Seamless background */
 }
 
 div.stButton > button {
@@ -150,6 +162,9 @@ div.stButton > button:hover {
 .nav-screen-inner {
     flex: 1;
     width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .nav-value {
@@ -184,6 +199,7 @@ div.stButton > button:hover {
     text-align: center; 
 }
 
+/* SCREWS */
 .screw {
     position: absolute; width: 6px; height: 6px;
     background: #57606f; border-radius: 50%; 
@@ -198,17 +214,10 @@ div.stButton > button:hover {
 .wait { color: #ff9f43; }
 </style>
 """
-st.markdown(main_css, unsafe_allow_html=True)
 
-# DYNAMIC BACKGROUND COLOR (Injected separately)
+# Inject Dynamic Background Color
 bg_color = "#000000" if st.session_state.secure_mode else "#0d1117"
-st.markdown(
-    f"""<style>
-    .stApp {{ background-color: {bg_color} !important; }}
-    div.stButton {{ background-color: {bg_color} !important; }}
-    </style>""", 
-    unsafe_allow_html=True
-)
+st.markdown(css_template.replace("BG_COLOR_PLACEHOLDER", bg_color), unsafe_allow_html=True)
 
 # ==========================================
 # 3. DATA & LOGIC
@@ -229,6 +238,7 @@ def get_data():
 # 4. UI RENDER
 # ==========================================
 
+# RENDER BUTTON
 if st.session_state.secure_mode:
     btn_label = "👁️ ACTIVATE SYSTEM"
 else:
@@ -236,6 +246,7 @@ else:
 
 st.button(btn_label, on_click=toggle_secure)
 
+# RENDER CONTENT (Only if not secure)
 if not st.session_state.secure_mode:
     acct, trades = get_data()
     nav_str = "£750" 
@@ -271,8 +282,7 @@ if not st.session_state.secure_mode:
         rows = "<tr><td colspan='6' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
 
     # HTML STRING - FLUSH LEFT
-    # We use a variable to ensure clean rendering
-    html_content = f"""
+    dashboard_html = f"""
 <div class="dashboard-container">
 <div class="nav-box">
 <div class="screw tl"></div><div class="screw tr"></div>
@@ -299,7 +309,7 @@ if not st.session_state.secure_mode:
 </div>
 </div>
 """
-    st.markdown(html_content, unsafe_allow_html=True)
+    st.markdown(dashboard_html, unsafe_allow_html=True)
 
     time.sleep(2)
     st.rerun()
