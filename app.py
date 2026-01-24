@@ -7,7 +7,7 @@ import time
 # ==========================================
 st.set_page_config(page_title="COMMAND INTERFACE", layout="wide")
 
-# Initialize State
+# Initialize Session State for the Secure Toggle
 if 'secure_mode' not in st.session_state:
     st.session_state.secure_mode = False
 
@@ -21,7 +21,7 @@ try:
         API_TOKEN = st.secrets["API_TOKEN"]
         ENVIRONMENT = st.secrets["ENVIRONMENT"]
     else:
-        # Fallback defaults
+        # Fallback for local testing
         ACCOUNT_ID = "000-000-0000000-000"
         API_TOKEN = "token"
         ENVIRONMENT = "practice"
@@ -29,10 +29,10 @@ except:
     st.stop()
 
 # ==========================================
-# 2. CSS STYLING
+# 2. CSS STYLING (THE SCI-FI LOOK + INVISIBLE BUTTON)
 # ==========================================
-# Logic: If secure_mode is True, overlay is BLACK. If False, it is TRANSPARENT.
-overlay_bg = "#000000" if st.session_state.secure_mode else "rgba(0,0,0,0)"
+# Determine overlay color: Black if secure, Transparent if not.
+overlay_color = "#000000" if st.session_state.secure_mode else "rgba(0,0,0,0)"
 
 css_template = f"""
 <style>
@@ -44,8 +44,8 @@ css_template = f"""
 }}
 
 /* -----------------------------------------------------------
-   FULL SCREEN TOGGLE BUTTON
-   This forces the st.button to cover the entire viewport.
+   FULL SCREEN OVERLAY BUTTON
+   This forces the Streamlit button to cover the ENTIRE screen.
 ----------------------------------------------------------- */
 div.stButton > button {{
     position: fixed !important;
@@ -53,33 +53,33 @@ div.stButton > button {{
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    z-index: 999999 !important; /* Topmost layer */
+    z-index: 999999 !important; /* Sit on top of everything */
     
-    background-color: {overlay_bg} !important;
+    background-color: {overlay_color} !important;
     
     border: none !important;
-    color: transparent !important;
-    cursor: default !important; 
+    color: transparent !important; /* Hide text */
+    cursor: default !important;
     border-radius: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
 }}
 
-/* Remove hover effects to prevent flickering */
+/* Remove hover/active effects so it doesn't flash */
 div.stButton > button:hover, div.stButton > button:active, div.stButton > button:focus {{
-    background-color: {overlay_bg} !important;
+    background-color: {overlay_color} !important;
     border: none !important;
     color: transparent !important;
     box-shadow: none !important;
 }}
 
 /* -----------------------------------------------------------
-   DASHBOARD STYLING (Sci-Fi Look)
+   DASHBOARD LAYOUT (The "Sci-Fi" Look)
 ----------------------------------------------------------- */
 .block-container {{
     margin: 0 !important;
     margin-top: -55px !important; 
-    padding: 35px 10px 0 10px !important;
+    padding: 35px 10px 0 10px !important; /* 35px Top Padding */
     max-width: 100% !important;
     height: 100vh; 
     min-height: -webkit-fill-available;
@@ -89,9 +89,9 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 
 header, footer, [data-testid="stToolbar"] {{display: none !important;}}
 
-/* MAIN CONTAINER */
+/* FLEX CONTAINER FOR BOXES */
 .dashboard-container {{
-    height: calc(100vh - 45px);
+    height: calc(100vh - 45px); /* Full height minus top spacing */
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -114,7 +114,7 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
 .nav-box {{ flex: 1; min-height: 200px; }}
 .trade-box {{ flex: 0 0 auto; max-height: 40vh; }}
 
-/* SCREEN (CRT EFFECT) */
+/* SCREEN EFFECT */
 .screen {{
     background-color: #000000;
     border: 2px solid #2d3436;
@@ -150,7 +150,7 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
     margin-top: -10px; 
 }}
 
-/* TABLE STYLING */
+/* CUSTOM TABLE STYLING */
 .trade-table {{
     width: 100%;
     color: #dcdde1;
@@ -186,8 +186,9 @@ header, footer, [data-testid="stToolbar"] {{display: none !important;}}
 st.markdown(css_template, unsafe_allow_html=True)
 
 # ==========================================
-# 3. RENDER TOGGLE BUTTON (COVERS EVERYTHING)
+# 3. RENDER THE FULL-SCREEN BUTTON
 # ==========================================
+# This button is technically "on top" of everything but transparent in secure_mode=False
 st.button(" ", on_click=toggle_secure, key="overlay_btn")
 
 # ==========================================
@@ -206,11 +207,8 @@ def get_data():
     return None, None
 
 # ==========================================
-# 5. UI RENDER (Only renders visually if logic runs)
+# 5. UI RENDER (BEHIND THE BUTTON)
 # ==========================================
-# Note: Even if secure_mode is True, we can render the HTML underneath. 
-# The CSS overlay simply hides it from view.
-
 acct, trades = get_data()
 
 # --- NAV LOGIC ---
@@ -218,7 +216,7 @@ nav_str = "£0"
 if acct: 
     nav_str = f"£{float(acct['NAV']):,.0f}"
 
-# Dynamic Font Scaling
+# Font Scaling
 char_len = len(nav_str)
 if char_len <= 4: f_size = "min(25vh, 25vw)"
 elif char_len <= 6: f_size = "min(19vh, 19vw)"
@@ -235,8 +233,8 @@ if trades:
         
         # Formatting
         side = "LONG" if u > 0 else "SHORT"
-        s_cls = "long" if u > 0 else "short"  # Assumes .long/.short CSS classes (added below)
         pl_color = "#0be881" if pl >= 0 else "#ff9f43"
+        dir_color = "#0be881" if u > 0 else "#ff3f34"
         
         # TSL Logic
         tsl, l_s, l_c = "-", "WAIT", "#ff9f43"
@@ -249,7 +247,7 @@ if trades:
                     l_s, l_c = "LOCKED", "#0be881"
 
         rows += f"""<tr>
-            <td style="color: {'#0be881' if u>0 else '#ff3f34'}">{side}</td>
+            <td style="color: {dir_color}">{side}</td>
             <td>{int(u)}</td>
             <td>{t['instrument'].replace('_','/')}</td>
             <td style="color:{pl_color}">£{pl:.2f}</td>
@@ -259,7 +257,7 @@ if trades:
 else:
     rows = "<tr><td colspan='6' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
 
-# --- DASHBOARD HTML ---
+# --- DASHBOARD HTML STRUCTURE ---
 dashboard_html = f"""
 <div class="dashboard-container">
     <div class="nav-box">
@@ -289,6 +287,5 @@ dashboard_html = f"""
 
 st.markdown(dashboard_html, unsafe_allow_html=True)
 
-# Auto-Refresh
 time.sleep(2)
 st.rerun()
