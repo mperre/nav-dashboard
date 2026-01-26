@@ -47,7 +47,6 @@ css_template = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
 
-/* GLOBAL SETTINGS */
 .stApp {{
     background-color: #000000 !important;
     overflow: hidden !important; 
@@ -59,9 +58,6 @@ css_template = f"""
 ::-webkit-scrollbar {{ display: none; }}
 * {{ -ms-overflow-style: none; scrollbar-width: none; }}
 
-/* -----------------------------------------------------------
-   CONFETTI IFRAME
------------------------------------------------------------ */
 iframe {{
     position: fixed !important;
     top: 0 !important;
@@ -74,14 +70,13 @@ iframe {{
     border: none !important;
 }}
 
-/* FULL SCREEN INTERACTION BUTTON */
 div.stButton > button {{
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    z-index: 999999 !important; /* Below confetti, Above dashboard */
+    z-index: 999999 !important;
     background-color: transparent !important;
     border: none !important;
     color: transparent !important;
@@ -97,7 +92,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     box-shadow: none !important;
 }}
 
-/* DASHBOARD CONTAINER */
 .block-container {{
     margin: 0 !important;
     margin-top: -55px !important; 
@@ -122,7 +116,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     transition: {dash_transition}; 
 }}
 
-/* COMPONENT BOXES */
 .nav-box, .trade-box {{
     background-color: #1e272e;
     border: 3px solid #485460;
@@ -134,11 +127,9 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     overflow: hidden;
 }}
 
-/* Top box flexes to fill space */
 .nav-box {{ flex: 1; min-height: 200px; }}
 .trade-box {{ flex: 0 0 auto; max-height: 40vh; display: flex; flex-direction: column; }}
 
-/* SCREEN & TEXT */
 .screen {{
     background-color: #000000;
     border: 2px solid #2d3436;
@@ -154,12 +145,10 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 .label-text {{ font-family: 'Orbitron'; font-size: 12px; color: #808e9b; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; padding-left: 4px; }}
 .nav-value {{ font-family: 'Orbitron'; color: #0be881; font-weight: 900; line-height: 1; margin-top: -10px; }}
 
-/* TABLE */
 .trade-table {{ width: 100%; color: #dcdde1; font-family: 'Orbitron'; font-size: 11px; border-collapse: collapse; }}
 .trade-table th {{ border-bottom: 1px solid #485460; padding: 8px 2px; color: #808e9b; text-align: center; background: #050505; position: sticky; top: 0; }}
 .trade-table td {{ border-bottom: 1px solid #2d3436; padding: 10px 2px; text-align: center; }}
 
-/* SCREWS */
 .screw {{ position: absolute; width: 6px; height: 6px; background: #57606f; border-radius: 50%; border: 1px solid #2f3640; z-index: 5; }}
 .tl {{top:6px; left:6px;}} .tr {{top:6px; right:6px;}} .bl {{bottom:6px; left:6px;}} .br {{bottom:6px; right:6px;}}
 </style>
@@ -269,7 +258,6 @@ elif char_len <= 7: f_size = "min(15vh, 15vw)"
 else: f_size = "min(12vh, 12vw)"
 
 # --- CONDITIONAL COLUMNS CHECK ---
-# Check if ANY trade has a Trailing Stop Loss
 show_tsl_cols = False
 if trades:
     for t in trades:
@@ -300,20 +288,13 @@ if trades:
                 if (u > 0 and tv > entry) or (u < 0 and tv < entry):
                     l_s, l_c = "LOCKED", "#0be881"
         
-        # Construct Row HTML
+        # Construct Row HTML (Flattened to single line to prevent code-block rendering issues)
         extra_cells = ""
         if show_tsl_cols:
             extra_cells = f"<td>{tsl}</td><td style='color:{l_c}; font-weight:bold;'>{l_s}</td>"
 
-        rows += f"""<tr>
-            <td style="color: {dir_color}">{side}</td>
-            <td>{int(u)}</td>
-            <td>{t['instrument'].replace('_','/')}</td>
-            <td style="color:{pl_color}">£{pl:.2f}</td>
-            {extra_cells}
-        </tr>"""
+        rows += f"<tr><td style='color: {dir_color}'>{side}</td><td>{int(u)}</td><td>{t['instrument'].replace('_','/')}</td><td style='color:{pl_color}'>£{pl:.2f}</td>{extra_cells}</tr>"
 else:
-    # Adjust colspan if TSL cols are hidden (4 cols vs 6 cols)
     col_span = "6" if show_tsl_cols else "4"
     rows = f"<tr><td colspan='{col_span}' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
 
@@ -322,6 +303,7 @@ extra_headers = ""
 if show_tsl_cols:
     extra_headers = "<th>TSL</th><th>LOCK</th>"
 
+# Flattened Dashboard HTML
 dashboard_html = f"""
 <div class="dashboard-container">
     <div class="nav-box">
