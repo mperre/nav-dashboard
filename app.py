@@ -143,7 +143,9 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     height: 100%;
 }}
 .label-text {{ font-family: 'Orbitron'; font-size: 12px; color: #808e9b; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; padding-left: 4px; }}
-.nav-value {{ font-family: 'Orbitron'; color: #0be881; font-weight: 900; line-height: 1; margin-top: -10px; }}
+
+/* --- CHANGED FONT WEIGHT HERE FROM 900 TO 500 --- */
+.nav-value {{ font-family: 'Orbitron'; color: #0be881; font-weight: 500; line-height: 1; margin-top: -10px; }}
 
 .trade-table {{ width: 100%; color: #dcdde1; font-family: 'Orbitron'; font-size: 11px; border-collapse: collapse; }}
 .trade-table th {{ border-bottom: 1px solid #485460; padding: 8px 2px; color: #808e9b; text-align: center; background: #050505; position: sticky; top: 0; }}
