@@ -281,8 +281,9 @@ if trades:
         dir_color = "#0be881" if u > 0 else "#ff3f34"
         
         # --- MODIFIED LOGIC START ---
-        # Default state: No TSL found, show dash, use grey color
-        tsl, l_s, l_c = "-", "-", "#57606f"
+        # Default state: No TSL found, show dash. 
+        # Color #dcdde1 matches the default table text color (same as TSL dash).
+        tsl, l_s, l_c = "-", "-", "#dcdde1"
         
         if 'trailingStopLossOrder' in t:
             trig = t['trailingStopLossOrder'].get('triggerPrice')
