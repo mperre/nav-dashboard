@@ -111,7 +111,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 }}
 
 .dashboard-container {{
-    /* CHANGED: Adjusted from 72px to 74px to reduce total height by 2px */
     height: calc(100vh - 74px);
     width: 100%;
     display: flex;
@@ -135,7 +134,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     overflow: hidden;
 }}
 
-/* Top box flexes to fill space. Reducing container height shrinks this box. */
+/* Top box flexes to fill space */
 .nav-box {{ flex: 1; min-height: 200px; }}
 .trade-box {{ flex: 0 0 auto; max-height: 40vh; display: flex; flex-direction: column; }}
 
@@ -220,7 +219,6 @@ confetti_html = """
         }
     }
 
-    // Capture Phase Listeners
     doc.addEventListener('touchstart', onTouchStart, true);
     doc.addEventListener('touchend', onTouchEnd, true);
 </script>
@@ -270,6 +268,16 @@ elif char_len <= 6: f_size = "min(19vh, 19vw)"
 elif char_len <= 7: f_size = "min(15vh, 15vw)"
 else: f_size = "min(12vh, 12vw)"
 
+# --- CONDITIONAL COLUMNS CHECK ---
+# Check if ANY trade has a Trailing Stop Loss
+show_tsl_cols = False
+if trades:
+    for t in trades:
+        if 'trailingStopLossOrder' in t and t['trailingStopLossOrder'].get('triggerPrice'):
+            show_tsl_cols = True
+            break
+# ---------------------------------
+
 rows = ""
 if trades:
     for t in trades:
@@ -280,9 +288,7 @@ if trades:
         pl_color = "#0be881" if pl >= 0 else "#ff9f43"
         dir_color = "#0be881" if u > 0 else "#ff3f34"
         
-        # --- MODIFIED LOGIC START ---
-        # Default state: No TSL found, show dash. 
-        # Color #dcdde1 matches the default table text color (same as TSL dash).
+        # Calculate TSL/LOCK values
         tsl, l_s, l_c = "-", "-", "#dcdde1"
         
         if 'trailingStopLossOrder' in t:
@@ -290,25 +296,31 @@ if trades:
             if trig:
                 tv = float(trig)
                 tsl = f"{tv:.3f}"
-                
-                # TSL exists, so we default to WAIT (orange)
                 l_s, l_c = "WAIT", "#ff9f43"
-                
-                # Check if locked in profit
                 if (u > 0 and tv > entry) or (u < 0 and tv < entry):
                     l_s, l_c = "LOCKED", "#0be881"
-        # --- MODIFIED LOGIC END ---
         
+        # Construct Row HTML
+        extra_cells = ""
+        if show_tsl_cols:
+            extra_cells = f"<td>{tsl}</td><td style='color:{l_c}; font-weight:bold;'>{l_s}</td>"
+
         rows += f"""<tr>
             <td style="color: {dir_color}">{side}</td>
             <td>{int(u)}</td>
             <td>{t['instrument'].replace('_','/')}</td>
             <td style="color:{pl_color}">£{pl:.2f}</td>
-            <td>{tsl}</td>
-            <td style="color:{l_c}; font-weight:bold;">{l_s}</td>
+            {extra_cells}
         </tr>"""
 else:
-    rows = "<tr><td colspan='6' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
+    # Adjust colspan if TSL cols are hidden (4 cols vs 6 cols)
+    col_span = "6" if show_tsl_cols else "4"
+    rows = f"<tr><td colspan='{col_span}' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
+
+# Construct Header HTML
+extra_headers = ""
+if show_tsl_cols:
+    extra_headers = "<th>TSL</th><th>LOCK</th>"
 
 dashboard_html = f"""
 <div class="dashboard-container">
@@ -327,7 +339,7 @@ dashboard_html = f"""
         <div class="screen" style="display:block; padding:0; flex:1; min-height:0; overflow-y:auto;">
             <table class="trade-table">
                 <thead>
-                    <tr><th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th><th>TSL</th><th>LOCK</th></tr>
+                    <tr><th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th>{extra_headers}</tr>
                 </thead>
                 <tbody>{rows}</tbody>
             </table>
