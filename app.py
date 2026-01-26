@@ -279,14 +279,24 @@ if trades:
         side = "LONG" if u > 0 else "SHORT"
         pl_color = "#0be881" if pl >= 0 else "#ff9f43"
         dir_color = "#0be881" if u > 0 else "#ff3f34"
-        tsl, l_s, l_c = "-", "WAIT", "#ff9f43"
+        
+        # --- MODIFIED LOGIC START ---
+        # Default state: No TSL found, show dash, use grey color
+        tsl, l_s, l_c = "-", "-", "#57606f"
+        
         if 'trailingStopLossOrder' in t:
             trig = t['trailingStopLossOrder'].get('triggerPrice')
             if trig:
                 tv = float(trig)
                 tsl = f"{tv:.3f}"
+                
+                # TSL exists, so we default to WAIT (orange)
+                l_s, l_c = "WAIT", "#ff9f43"
+                
+                # Check if locked in profit
                 if (u > 0 and tv > entry) or (u < 0 and tv < entry):
                     l_s, l_c = "LOCKED", "#0be881"
+        # --- MODIFIED LOGIC END ---
         
         rows += f"""<tr>
             <td style="color: {dir_color}">{side}</td>
