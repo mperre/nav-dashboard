@@ -295,7 +295,8 @@ if trades:
         if show_tsl_cols:
             extra_cells = f"<td>{tsl}</td><td style='color:{l_c}; font-weight:bold;'>{l_s}</td>"
 
-        rows += f"<tr><td style='color: {dir_color}'>{side}</td><td>{int(u)}</td><td>{t['instrument'].replace('_','/')}</td><td style='color:{pl_color}'>£{pl:.2f}</td>{extra_cells}</tr>"
+        # CHANGED: {int(u)} to {u:.1f}
+        rows += f"<tr><td style='color: {dir_color}'>{side}</td><td>{u:.1f}</td><td>{t['instrument'].replace('_','/')}</td><td style='color:{pl_color}'>£{pl:.2f}</td>{extra_cells}</tr>"
 else:
     col_span = "6" if show_tsl_cols else "4"
     rows = f"<tr><td colspan='{col_span}' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
