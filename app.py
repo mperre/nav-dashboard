@@ -144,8 +144,20 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 }}
 .label-text {{ font-family: 'Orbitron'; font-size: 12px; color: #808e9b; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; padding-left: 4px; }}
 
-/* --- CHANGED FONT WEIGHT HERE FROM 900 TO 500 --- */
-.nav-value {{ font-family: 'Orbitron'; color: #0be881; font-weight: 500; line-height: 1; margin-top: -10px; }}
+/* --- UPDATED NAV VALUE CSS --- */
+.nav-value {{ 
+    font-family: 'Orbitron'; 
+    color: #0be881; 
+    font-weight: 500; 
+    line-height: 1; 
+    margin-top: -10px;
+    
+    /* FIX FOR SHIFTING NUMBERS */
+    font-variant-numeric: tabular-nums; /* Forces equal width for every digit */
+    font-feature-settings: "tnum";      /* Browser fallback */
+    letter-spacing: 12px;               /* Spaces out the numbers */
+    margin-right: -12px;                /* Centers the text perfectly by ignoring last char spacing */
+}}
 
 .trade-table {{ width: 100%; color: #dcdde1; font-family: 'Orbitron'; font-size: 11px; border-collapse: collapse; }}
 .trade-table th {{ border-bottom: 1px solid #485460; padding: 8px 2px; color: #808e9b; text-align: center; background: #050505; position: sticky; top: 0; }}
@@ -254,10 +266,11 @@ if acct:
     nav_str = f"£{float(acct['NAV']):,.0f}"
 
 char_len = len(nav_str)
-if char_len <= 4: f_size = "min(25vh, 25vw)"
-elif char_len <= 6: f_size = "min(19vh, 19vw)"
-elif char_len <= 7: f_size = "min(15vh, 15vw)"
-else: f_size = "min(12vh, 12vw)"
+# Slightly adjusted sizes to account for the wider spacing
+if char_len <= 4: f_size = "min(22vh, 22vw)"
+elif char_len <= 6: f_size = "min(16vh, 16vw)"
+elif char_len <= 7: f_size = "min(12vh, 12vw)"
+else: f_size = "min(10vh, 10vw)"
 
 # --- CONDITIONAL COLUMNS CHECK ---
 show_tsl_cols = False
@@ -290,12 +303,11 @@ if trades:
                 if (u > 0 and tv > entry) or (u < 0 and tv < entry):
                     l_s, l_c = "LOCKED", "#0be881"
         
-        # Construct Row HTML (Flattened to single line to prevent code-block rendering issues)
+        # Construct Row HTML
         extra_cells = ""
         if show_tsl_cols:
             extra_cells = f"<td>{tsl}</td><td style='color:{l_c}; font-weight:bold;'>{l_s}</td>"
 
-        # CHANGED: {int(u)} to {u:.1f}
         rows += f"<tr><td style='color: {dir_color}'>{side}</td><td>{u:.1f}</td><td>{t['instrument'].replace('_','/')}</td><td style='color:{pl_color}'>£{pl:.2f}</td>{extra_cells}</tr>"
 else:
     col_span = "6" if show_tsl_cols else "4"
