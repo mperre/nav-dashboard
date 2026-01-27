@@ -155,8 +155,8 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     /* FIX FOR SHIFTING NUMBERS */
     font-variant-numeric: tabular-nums; /* Forces equal width for every digit */
     font-feature-settings: "tnum";      /* Browser fallback */
-    letter-spacing: 12px;               /* Spaces out the numbers */
-    margin-right: -12px;                /* Centers the text perfectly by ignoring last char spacing */
+    letter-spacing: 12px;                /* Spaces out the numbers */
+    margin-right: -12px;                 /* Centers the text perfectly by ignoring last char spacing */
 }}
 
 .trade-table {{ width: 100%; color: #dcdde1; font-family: 'Orbitron'; font-size: 11px; border-collapse: collapse; }}
@@ -266,11 +266,12 @@ if acct:
     nav_str = f"£{float(acct['NAV']):,.0f}"
 
 char_len = len(nav_str)
-# Slightly adjusted sizes to account for the wider spacing
-if char_len <= 4: f_size = "min(22vh, 22vw)"
-elif char_len <= 6: f_size = "min(16vh, 16vw)"
-elif char_len <= 7: f_size = "min(12vh, 12vw)"
-else: f_size = "min(10vh, 10vw)"
+
+# --- ADJUSTED FONT SIZES (REDUCED BY 20%) ---
+if char_len <= 4: f_size = "min(17.5vh, 17.5vw)"   # Reduced from 22
+elif char_len <= 6: f_size = "min(13vh, 13vw)"     # Reduced from 16
+elif char_len <= 7: f_size = "min(9.5vh, 9.5vw)"   # Reduced from 12
+else: f_size = "min(8vh, 8vw)"                     # Reduced from 10
 
 # --- CONDITIONAL COLUMNS CHECK ---
 show_tsl_cols = False
