@@ -145,14 +145,14 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 }}
 .label-text {{ font-family: 'Orbitron'; font-size: 12px; color: #808e9b; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; padding-left: 4px; }}
 
-/* --- UPDATED NAV VALUE CSS FOR STABILITY --- */
+/* --- NAV VALUE CSS (MONOSPACED) --- */
 .nav-value {{ 
-    font-family: 'Share Tech Mono', monospace; /* Natively Monospaced Font */
+    font-family: 'Share Tech Mono', monospace;
     color: #0be881; 
     font-weight: 500; 
     line-height: 1; 
     margin-top: -10px;
-    letter-spacing: 2px; /* Reduced letter spacing slightly for Mono font */
+    letter-spacing: 2px;
 }}
 
 .trade-table {{ width: 100%; color: #dcdde1; font-family: 'Orbitron'; font-size: 11px; border-collapse: collapse; }}
@@ -270,11 +270,12 @@ if acct:
     nav_str = f"£{float(acct['NAV']):,.0f}"
 
 char_len = len(nav_str)
-# Slightly reduced sizes (approx 20% down from original)
-if char_len <= 4: f_size = "min(17.5vh, 17.5vw)"
-elif char_len <= 6: f_size = "min(13vh, 13vw)"
-elif char_len <= 7: f_size = "min(9.5vh, 9.5vw)"
-else: f_size = "min(8vh, 8vw)"
+
+# --- FONT SIZES DOUBLED FROM PREVIOUS VALUES ---
+if char_len <= 4: f_size = "min(35vh, 35vw)"
+elif char_len <= 6: f_size = "min(26vh, 26vw)"
+elif char_len <= 7: f_size = "min(19vh, 19vw)"
+else: f_size = "min(16vh, 16vw)"
 
 # --- CONDITIONAL COLUMNS CHECK ---
 show_tsl_cols = False
