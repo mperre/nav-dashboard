@@ -159,7 +159,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     text-align: center;
 }}
 
-/* --- TRADE TABLE: Fixed Layout --- */
+/* --- TRADE TABLE --- */
 .trade-table {{ 
     width: 100%; 
     color: #dcdde1; 
@@ -168,9 +168,18 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     border-collapse: collapse; 
     font-weight: 400; 
     letter-spacing: -0.5px;
-    
-    /* Forces all columns to be equal width regardless of content */
-    table-layout: fixed; 
+    table-layout: fixed; /* Maintains strict column sizing */
+}}
+
+/* FORCE FIRST 3 COLUMNS TO BE NARROWER (15% EACH)
+   nth-child(1) = DIR
+   nth-child(2) = UNITS
+   nth-child(3) = INST
+*/
+.trade-table th:nth-child(1), 
+.trade-table th:nth-child(2), 
+.trade-table th:nth-child(3) {{
+    width: 15% !important;
 }}
 
 .trade-table th {{ 
@@ -181,8 +190,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     background: #050505; 
     position: sticky; 
     top: 0; 
-    
-    /* Ensure long headers don't break the layout */
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -194,8 +201,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     text-align: center; 
     font-variant-numeric: tabular-nums; 
     font-feature-settings: "tnum";
-    
-    /* Ensure long data (like instrument names) wraps or hides gracefully */
     overflow: hidden;
     white-space: nowrap; 
     text-overflow: ellipsis;
