@@ -43,7 +43,7 @@ else:
     dash_pointer = "auto"
     dash_transition = "opacity 0.5s ease-in" 
 
-# IMPORTED 'Martian Mono' (Weights 400 and 800)
+# IMPORTED 'Martian Mono'
 css_template = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;800&family=Orbitron:wght@500;700;900&display=swap');
@@ -145,24 +145,30 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 }}
 .label-text {{ font-family: 'Orbitron'; font-size: 12px; color: #808e9b; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; padding-left: 4px; }}
 
-/* --- UPDATED CSS: NORMAL WEIGHT + 80% WIDTH RESTRICTION --- */
+/* --- NAV VALUE: Martian Mono, 80% Width Logic --- */
 .nav-value {{ 
     font-family: 'Martian Mono', monospace; 
     color: #0be881; 
-    font-weight: 400;  /* Standard Weight (Not Bold) */
+    font-weight: 400;  
     line-height: 1; 
     margin-top: -10px;
-    
     letter-spacing: -2px; 
     white-space: nowrap;
     text-shadow: none;
-    
-    /* Centering with max-width restriction */
     width: 100%;
     text-align: center;
 }}
 
-.trade-table {{ width: 100%; color: #dcdde1; font-family: 'Orbitron'; font-size: 11px; border-collapse: collapse; }}
+/* --- TRADE TABLE: Now uses Martian Mono to match --- */
+.trade-table {{ 
+    width: 100%; 
+    color: #dcdde1; 
+    font-family: 'Martian Mono', monospace; /* Changed from Orbitron */
+    font-size: 11px; 
+    border-collapse: collapse; 
+    font-weight: 400; /* Standard weight */
+    letter-spacing: -0.5px; /* Slight tighten for table data */
+}}
 .trade-table th {{ border-bottom: 1px solid #485460; padding: 8px 2px; color: #808e9b; text-align: center; background: #050505; position: sticky; top: 0; }}
 
 .trade-table td {{ 
@@ -278,7 +284,6 @@ if acct:
 char_len = len(nav_str)
 
 # --- RESIZED to 80% SCREEN WIDTH MAX ---
-# Multiplied previous values by 0.8 to create the margin
 if char_len <= 4: f_size = "min(27vh, 27vw)"      
 elif char_len <= 5: f_size = "min(21.5vh, 21.5vw)"    
 elif char_len <= 6: f_size = "min(18.5vh, 18.5vw)"    
