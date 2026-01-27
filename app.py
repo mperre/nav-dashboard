@@ -145,15 +145,18 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 }}
 .label-text {{ font-family: 'Orbitron'; font-size: 12px; color: #808e9b; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; padding-left: 4px; }}
 
-/* --- NAV VALUE CSS (MONOSPACED) --- */
+/* --- NAV VALUE CSS (BOLD + SHADOW) --- */
 .nav-value {{ 
     font-family: 'Share Tech Mono', monospace;
     color: #0be881; 
-    font-weight: 500; 
+    font-weight: bold; /* Thicker weight */
     line-height: 1; 
     margin-top: -10px;
     letter-spacing: 2px;
-    white-space: nowrap; /* Prevents wrapping if number gets too big */
+    white-space: nowrap; 
+    
+    /* Adds a glow/stroke effect to make it look even bolder */
+    text-shadow: 0 0 15px rgba(11, 232, 129, 0.4), 1px 0 0 #0be881; 
 }}
 
 .trade-table {{ width: 100%; color: #dcdde1; font-family: 'Orbitron'; font-size: 11px; border-collapse: collapse; }}
