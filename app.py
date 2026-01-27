@@ -43,10 +43,10 @@ else:
     dash_pointer = "auto"
     dash_transition = "opacity 0.5s ease-in" 
 
-# IMPORTED 'Share Tech Mono' for the numbers
+# IMPORTED 'Martian Mono' (The Monospaced cousin to Orbitron)
 css_template = f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;800&family=Orbitron:wght@500;700;900&display=swap');
 
 .stApp {{
     background-color: #000000 !important;
@@ -145,24 +145,25 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 }}
 .label-text {{ font-family: 'Orbitron'; font-size: 12px; color: #808e9b; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; padding-left: 4px; }}
 
-/* --- NAV VALUE CSS (BOLD + SHADOW) --- */
+/* --- UPDATED TO 'MARTIAN MONO' --- */
+/* This is monospaced (no jitter) but looks like Orbitron */
 .nav-value {{ 
-    font-family: 'Share Tech Mono', monospace;
+    font-family: 'Martian Mono', monospace; 
     color: #0be881; 
-    font-weight: bold; /* Thicker weight */
+    font-weight: 800; /* Extra Bold */
     line-height: 1; 
     margin-top: -10px;
-    letter-spacing: 2px;
-    white-space: nowrap; 
     
-    /* Adds a glow/stroke effect to make it look even bolder */
-    text-shadow: 0 0 15px rgba(11, 232, 129, 0.4), 1px 0 0 #0be881; 
+    letter-spacing: -2px; /* Tighten slightly as Mono fonts are wide */
+    white-space: nowrap;
+    
+    /* Clean text, no shadow/glow */
+    text-shadow: none;
 }}
 
 .trade-table {{ width: 100%; color: #dcdde1; font-family: 'Orbitron'; font-size: 11px; border-collapse: collapse; }}
 .trade-table th {{ border-bottom: 1px solid #485460; padding: 8px 2px; color: #808e9b; text-align: center; background: #050505; position: sticky; top: 0; }}
 
-/* Added tabular-nums to table cells to stop list jitter */
 .trade-table td {{ 
     border-bottom: 1px solid #2d3436; 
     padding: 10px 2px; 
@@ -276,14 +277,14 @@ if acct:
 char_len = len(nav_str)
 
 # --- GRANULAR DYNAMIC SCALING ---
-# Ensures fit for larger numbers (Millions, Billions)
-if char_len <= 4: f_size = "min(35vh, 35vw)"      # e.g., £999
-elif char_len <= 5: f_size = "min(28vh, 28vw)"    # e.g., £9,999
-elif char_len <= 6: f_size = "min(24vh, 24vw)"    # e.g., £99,999
-elif char_len <= 7: f_size = "min(19vh, 19vw)"    # e.g., £999,999
-elif char_len <= 8: f_size = "min(15vh, 15vw)"    # e.g., £1,234,567
-elif char_len <= 9: f_size = "min(12vh, 12vw)"    # e.g., £10,000,000
-else: f_size = "min(10vh, 10vw)"                  # e.g., £100,000,000+
+# Slightly adjusted for Martian Mono (which is slightly wider than Orbitron)
+if char_len <= 4: f_size = "min(34vh, 34vw)"      
+elif char_len <= 5: f_size = "min(27vh, 27vw)"    
+elif char_len <= 6: f_size = "min(23vh, 23vw)"    
+elif char_len <= 7: f_size = "min(18vh, 18vw)"    
+elif char_len <= 8: f_size = "min(14vh, 14vw)"    
+elif char_len <= 9: f_size = "min(11vh, 11vw)"    
+else: f_size = "min(9vh, 9vw)"                    
 
 # --- CONDITIONAL COLUMNS CHECK ---
 show_tsl_cols = False
