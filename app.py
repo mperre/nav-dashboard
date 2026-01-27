@@ -153,6 +153,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     line-height: 1; 
     margin-top: -10px;
     letter-spacing: 2px;
+    white-space: nowrap; /* Prevents wrapping if number gets too big */
 }}
 
 .trade-table {{ width: 100%; color: #dcdde1; font-family: 'Orbitron'; font-size: 11px; border-collapse: collapse; }}
@@ -271,11 +272,15 @@ if acct:
 
 char_len = len(nav_str)
 
-# --- FONT SIZES DOUBLED FROM PREVIOUS VALUES ---
-if char_len <= 4: f_size = "min(35vh, 35vw)"
-elif char_len <= 6: f_size = "min(26vh, 26vw)"
-elif char_len <= 7: f_size = "min(19vh, 19vw)"
-else: f_size = "min(16vh, 16vw)"
+# --- GRANULAR DYNAMIC SCALING ---
+# Ensures fit for larger numbers (Millions, Billions)
+if char_len <= 4: f_size = "min(35vh, 35vw)"      # e.g., £999
+elif char_len <= 5: f_size = "min(28vh, 28vw)"    # e.g., £9,999
+elif char_len <= 6: f_size = "min(24vh, 24vw)"    # e.g., £99,999
+elif char_len <= 7: f_size = "min(19vh, 19vw)"    # e.g., £999,999
+elif char_len <= 8: f_size = "min(15vh, 15vw)"    # e.g., £1,234,567
+elif char_len <= 9: f_size = "min(12vh, 12vw)"    # e.g., £10,000,000
+else: f_size = "min(10vh, 10vw)"                  # e.g., £100,000,000+
 
 # --- CONDITIONAL COLUMNS CHECK ---
 show_tsl_cols = False
