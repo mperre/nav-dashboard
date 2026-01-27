@@ -145,7 +145,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 }}
 .label-text {{ font-family: 'Orbitron'; font-size: 12px; color: #808e9b; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; padding-left: 4px; }}
 
-/* --- NAV VALUE: Martian Mono, 80% Width Logic --- */
+/* --- NAV VALUE --- */
 .nav-value {{ 
     font-family: 'Martian Mono', monospace; 
     color: #0be881; 
@@ -159,17 +159,34 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     text-align: center;
 }}
 
-/* --- TRADE TABLE: Now uses Martian Mono to match --- */
+/* --- TRADE TABLE: Fixed Layout --- */
 .trade-table {{ 
     width: 100%; 
     color: #dcdde1; 
-    font-family: 'Martian Mono', monospace; /* Changed from Orbitron */
+    font-family: 'Martian Mono', monospace; 
     font-size: 11px; 
     border-collapse: collapse; 
-    font-weight: 400; /* Standard weight */
-    letter-spacing: -0.5px; /* Slight tighten for table data */
+    font-weight: 400; 
+    letter-spacing: -0.5px;
+    
+    /* Forces all columns to be equal width regardless of content */
+    table-layout: fixed; 
 }}
-.trade-table th {{ border-bottom: 1px solid #485460; padding: 8px 2px; color: #808e9b; text-align: center; background: #050505; position: sticky; top: 0; }}
+
+.trade-table th {{ 
+    border-bottom: 1px solid #485460; 
+    padding: 8px 2px; 
+    color: #808e9b; 
+    text-align: center; 
+    background: #050505; 
+    position: sticky; 
+    top: 0; 
+    
+    /* Ensure long headers don't break the layout */
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}}
 
 .trade-table td {{ 
     border-bottom: 1px solid #2d3436; 
@@ -177,6 +194,11 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     text-align: center; 
     font-variant-numeric: tabular-nums; 
     font-feature-settings: "tnum";
+    
+    /* Ensure long data (like instrument names) wraps or hides gracefully */
+    overflow: hidden;
+    white-space: nowrap; 
+    text-overflow: ellipsis;
 }}
 
 .screw {{ position: absolute; width: 6px; height: 6px; background: #57606f; border-radius: 50%; border: 1px solid #2f3640; z-index: 5; }}
