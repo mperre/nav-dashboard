@@ -43,7 +43,7 @@ else:
     dash_pointer = "auto"
     dash_transition = "opacity 0.5s ease-in" 
 
-# IMPORTED 'Martian Mono' (The Monospaced cousin to Orbitron)
+# IMPORTED 'Martian Mono' (Weights 400 and 800)
 css_template = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;800&family=Orbitron:wght@500;700;900&display=swap');
@@ -145,20 +145,21 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 }}
 .label-text {{ font-family: 'Orbitron'; font-size: 12px; color: #808e9b; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; padding-left: 4px; }}
 
-/* --- UPDATED TO 'MARTIAN MONO' --- */
-/* This is monospaced (no jitter) but looks like Orbitron */
+/* --- UPDATED CSS: NORMAL WEIGHT + 80% WIDTH RESTRICTION --- */
 .nav-value {{ 
     font-family: 'Martian Mono', monospace; 
     color: #0be881; 
-    font-weight: 800; /* Extra Bold */
+    font-weight: 400;  /* Standard Weight (Not Bold) */
     line-height: 1; 
     margin-top: -10px;
     
-    letter-spacing: -2px; /* Tighten slightly as Mono fonts are wide */
+    letter-spacing: -2px; 
     white-space: nowrap;
-    
-    /* Clean text, no shadow/glow */
     text-shadow: none;
+    
+    /* Centering with max-width restriction */
+    width: 100%;
+    text-align: center;
 }}
 
 .trade-table {{ width: 100%; color: #dcdde1; font-family: 'Orbitron'; font-size: 11px; border-collapse: collapse; }}
@@ -276,15 +277,15 @@ if acct:
 
 char_len = len(nav_str)
 
-# --- GRANULAR DYNAMIC SCALING ---
-# Slightly adjusted for Martian Mono (which is slightly wider than Orbitron)
-if char_len <= 4: f_size = "min(34vh, 34vw)"      
-elif char_len <= 5: f_size = "min(27vh, 27vw)"    
-elif char_len <= 6: f_size = "min(23vh, 23vw)"    
-elif char_len <= 7: f_size = "min(18vh, 18vw)"    
-elif char_len <= 8: f_size = "min(14vh, 14vw)"    
-elif char_len <= 9: f_size = "min(11vh, 11vw)"    
-else: f_size = "min(9vh, 9vw)"                    
+# --- RESIZED to 80% SCREEN WIDTH MAX ---
+# Multiplied previous values by 0.8 to create the margin
+if char_len <= 4: f_size = "min(27vh, 27vw)"      
+elif char_len <= 5: f_size = "min(21.5vh, 21.5vw)"    
+elif char_len <= 6: f_size = "min(18.5vh, 18.5vw)"    
+elif char_len <= 7: f_size = "min(14.5vh, 14.5vw)"    
+elif char_len <= 8: f_size = "min(11vh, 11vw)"    
+elif char_len <= 9: f_size = "min(9vh, 9vw)"    
+else: f_size = "min(7vh, 7vw)"                    
 
 # --- CONDITIONAL COLUMNS CHECK ---
 show_tsl_cols = False
