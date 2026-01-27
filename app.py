@@ -43,9 +43,10 @@ else:
     dash_pointer = "auto"
     dash_transition = "opacity 0.5s ease-in" 
 
+# IMPORTED 'Share Tech Mono' for the numbers
 css_template = f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap');
 
 .stApp {{
     background-color: #000000 !important;
@@ -144,24 +145,27 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 }}
 .label-text {{ font-family: 'Orbitron'; font-size: 12px; color: #808e9b; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; padding-left: 4px; }}
 
-/* --- UPDATED NAV VALUE CSS --- */
+/* --- UPDATED NAV VALUE CSS FOR STABILITY --- */
 .nav-value {{ 
-    font-family: 'Orbitron'; 
+    font-family: 'Share Tech Mono', monospace; /* Natively Monospaced Font */
     color: #0be881; 
     font-weight: 500; 
     line-height: 1; 
     margin-top: -10px;
-    
-    /* FIX FOR SHIFTING NUMBERS */
-    font-variant-numeric: tabular-nums; /* Forces equal width for every digit */
-    font-feature-settings: "tnum";      /* Browser fallback */
-    letter-spacing: 12px;                /* Spaces out the numbers */
-    margin-right: -12px;                 /* Centers the text perfectly by ignoring last char spacing */
+    letter-spacing: 2px; /* Reduced letter spacing slightly for Mono font */
 }}
 
 .trade-table {{ width: 100%; color: #dcdde1; font-family: 'Orbitron'; font-size: 11px; border-collapse: collapse; }}
 .trade-table th {{ border-bottom: 1px solid #485460; padding: 8px 2px; color: #808e9b; text-align: center; background: #050505; position: sticky; top: 0; }}
-.trade-table td {{ border-bottom: 1px solid #2d3436; padding: 10px 2px; text-align: center; }}
+
+/* Added tabular-nums to table cells to stop list jitter */
+.trade-table td {{ 
+    border-bottom: 1px solid #2d3436; 
+    padding: 10px 2px; 
+    text-align: center; 
+    font-variant-numeric: tabular-nums; 
+    font-feature-settings: "tnum";
+}}
 
 .screw {{ position: absolute; width: 6px; height: 6px; background: #57606f; border-radius: 50%; border: 1px solid #2f3640; z-index: 5; }}
 .tl {{top:6px; left:6px;}} .tr {{top:6px; right:6px;}} .bl {{bottom:6px; left:6px;}} .br {{bottom:6px; right:6px;}}
@@ -266,12 +270,11 @@ if acct:
     nav_str = f"£{float(acct['NAV']):,.0f}"
 
 char_len = len(nav_str)
-
-# --- ADJUSTED FONT SIZES (REDUCED BY 20%) ---
-if char_len <= 4: f_size = "min(17.5vh, 17.5vw)"   # Reduced from 22
-elif char_len <= 6: f_size = "min(13vh, 13vw)"     # Reduced from 16
-elif char_len <= 7: f_size = "min(9.5vh, 9.5vw)"   # Reduced from 12
-else: f_size = "min(8vh, 8vw)"                     # Reduced from 10
+# Slightly reduced sizes (approx 20% down from original)
+if char_len <= 4: f_size = "min(17.5vh, 17.5vw)"
+elif char_len <= 6: f_size = "min(13vh, 13vw)"
+elif char_len <= 7: f_size = "min(9.5vh, 9.5vw)"
+else: f_size = "min(8vh, 8vw)"
 
 # --- CONDITIONAL COLUMNS CHECK ---
 show_tsl_cols = False
