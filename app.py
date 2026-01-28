@@ -301,18 +301,19 @@ acct, trades = get_data()
 
 nav_str = "£0" 
 if acct: 
-    nav_str = f"£{float(acct['NAV']):,.0f}"
+    # REMOVED COMMA HERE: was :,\.0f, now is :.0f
+    nav_str = f"£{float(acct['NAV']):.0f}"
 
 char_len = len(nav_str)
 
 # --- RESIZED to 80% SCREEN WIDTH MAX ---
 if char_len <= 4: f_size = "min(27vh, 27vw)"      
-elif char_len <= 5: f_size = "min(21.5vh, 21.5vw)"    
-elif char_len <= 6: f_size = "min(18.5vh, 18.5vw)"    
-elif char_len <= 7: f_size = "min(14.5vh, 14.5vw)"    
-elif char_len <= 8: f_size = "min(11vh, 11vw)"    
-elif char_len <= 9: f_size = "min(9vh, 9vw)"    
-else: f_size = "min(7vh, 7vw)"                    
+elif char_len <= 5: f_size = "min(21.5vh, 21.5vw)"     
+elif char_len <= 6: f_size = "min(18.5vh, 18.5vw)"     
+elif char_len <= 7: f_size = "min(14.5vh, 14.5vw)"     
+elif char_len <= 8: f_size = "min(11vh, 11vw)"     
+elif char_len <= 9: f_size = "min(9vh, 9vw)"     
+else: f_size = "min(7vh, 7vw)"                      
 
 # --- CONDITIONAL COLUMNS CHECK ---
 show_tsl_cols = False
