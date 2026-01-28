@@ -299,12 +299,12 @@ def get_data():
 # ==========================================
 acct, trades = get_data()
 
-# 1. Get raw value first (no comma, no symbol)
+# 1. Get raw value first
 val_str = "0"
 if acct: 
     val_str = f"{float(acct['NAV']):.0f}"
 
-# 2. Calculate Visual Length (value + 1 for £) for font sizing
+# 2. Calculate Visual Length (+1 for the pound sign)
 char_len = len(val_str) + 1
 
 # --- RESIZED to 80% SCREEN WIDTH MAX ---
@@ -316,8 +316,8 @@ elif char_len <= 8: f_size = "min(11vh, 11vw)"
 elif char_len <= 9: f_size = "min(9vh, 9vw)"     
 else: f_size = "min(7vh, 7vw)"                      
 
-# 3. Construct HTML String with Darker £ (#068a4d is a darker green)
-nav_str = f"<span style='color: #068a4d;'>£</span>{val_str}"
+# 3. Construct HTML String with 50% size £
+nav_str = f"<span style='font-size: 50%;'>£</span>{val_str}"
 
 # --- CONDITIONAL COLUMNS CHECK ---
 show_tsl_cols = False
