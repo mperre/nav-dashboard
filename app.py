@@ -71,7 +71,7 @@ if acct:
     if real_margin_pct > 45: margin_color = "#ff3f34"
 
 # ==========================================
-# 3. CSS STYLING (REDUCED BY ANOTHER 5% -> 0.72em)
+# 3. CSS STYLING (REDUCED BY ANOTHER 5%)
 # ==========================================
 if st.session_state.secure_mode:
     dash_opacity = "0"
@@ -239,10 +239,10 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     align-items: baseline; 
 }}
 
-/* === REDUCED TO 0.72em === */
+/* === REDUCED BY 5% MORE === */
 .digit-box {{
     display: inline-block;
-    width: 0.72em; 
+    width: 0.76em; /* REDUCED from 0.8em */
     text-align: center;
 }}
 
