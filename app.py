@@ -128,8 +128,45 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     overflow: hidden;
 }}
 
+/* --- MARGIN BAR STYLES --- */
+.margin-box {{
+    width: 100%;
+    margin-top: -5px; 
+    margin-bottom: -5px;
+    padding: 0 4px;
+}}
+
+.progress-track {{
+    width: 100%;
+    height: 12px;
+    background-color: #000000;
+    border: 1px solid #485460;
+    border-radius: 2px;
+    margin-top: 4px;
+    position: relative;
+    overflow: hidden;
+}}
+
+.progress-fill {{
+    height: 100%;
+    transition: width 0.5s ease-in-out;
+    box-shadow: 0 0 8px rgba(255,255,255,0.1);
+}}
+
+/* Scale Marker (50%) */
+.scale-marker {{
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 2px;
+    background: #485460;
+    z-index: 2;
+}}
+/* ------------------------- */
+
 .nav-box {{ flex: 1; min-height: 200px; }}
-.trade-box {{ flex: 0 0 auto; max-height: 40vh; display: flex; flex-direction: column; }}
+.trade-box {{ flex: 0 0 auto; max-height: 38vh; display: flex; flex-direction: column; }}
 
 .screen {{
     background-color: #000000;
@@ -168,8 +205,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     border-collapse: collapse; 
     font-weight: 400; 
     letter-spacing: -0.5px;
-    
-    /* Forces all columns to be equal width regardless of content */
     table-layout: fixed; 
 }}
 
@@ -181,8 +216,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     background: #050505; 
     position: sticky; 
     top: 0; 
-    
-    /* Ensure long headers don't break the layout */
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -194,8 +227,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     text-align: center; 
     font-variant-numeric: tabular-nums; 
     font-feature-settings: "tnum";
-    
-    /* Ensure long data (like instrument names) wraps or hides gracefully */
     overflow: hidden;
     white-space: nowrap; 
     text-overflow: ellipsis;
@@ -299,6 +330,31 @@ def get_data():
 # ==========================================
 acct, trades = get_data()
 
+# --- MARGIN CALCULATION LOGIC ---
+real_margin_pct = 0.0
+visual_width = 0.0
+margin_color = "#0be881" # Default Green
+
+if acct:
+    nav_float = float(acct.get('NAV', 1))
+    margin_used = float(acct.get('marginUsed', 0))
+    
+    # Avoid division by zero
+    if nav_float > 0:
+        real_margin_pct = (margin_used / nav_float) * 100
+    
+    # SCALE LOGIC: 0% real = 0% visual, 50% real = 100% visual
+    # Formula: (Real / 50) * 100
+    visual_width = (real_margin_pct / 50) * 100
+    
+    # Cap at 100% width
+    if visual_width > 100: visual_width = 100
+    
+    # Color Logic (Warning Zones)
+    if real_margin_pct > 30: margin_color = "#ff9f43" # Orange Warning
+    if real_margin_pct > 45: margin_color = "#ff3f34" # Red Critical
+# -------------------------------
+
 # 1. Get raw value first
 val_str = "0"
 if acct: 
@@ -368,6 +424,7 @@ if show_tsl_cols:
 # Flattened Dashboard HTML
 dashboard_html = f"""
 <div class="dashboard-container">
+    
     <div class="nav-box">
         <div class="screw tl"></div><div class="screw tr"></div>
         <div class="screw bl"></div><div class="screw br"></div>
@@ -376,6 +433,17 @@ dashboard_html = f"""
             <div class="nav-value" style="font-size: {f_size};">{nav_str}</div>
         </div>
     </div>
+
+    <div class="margin-box">
+         <div style="display:flex; justify-content:space-between; align-items:flex-end; padding: 0 2px;">
+            <div class="label-text" style="margin:0; font-size:10px;">MARGIN LOAD</div>
+            <div class="label-text" style="margin:0; font-size:10px; color:{margin_color};">{real_margin_pct:.1f}%</div>
+         </div>
+         <div class="progress-track">
+             <div class="scale-marker"></div> <div class="progress-fill" style="width: {visual_width}%; background-color: {margin_color}; box-shadow: 0 0 10px {margin_color};"></div>
+         </div>
+    </div>
+
     <div class="trade-box">
         <div class="screw tl"></div><div class="screw tr"></div>
         <div class="screw bl"></div><div class="screw br"></div>
@@ -389,6 +457,7 @@ dashboard_html = f"""
             </table>
         </div>
     </div>
+
 </div>
 """
 
@@ -396,4 +465,3 @@ st.markdown(dashboard_html, unsafe_allow_html=True)
 
 time.sleep(2)
 st.rerun()
-
