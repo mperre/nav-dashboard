@@ -33,7 +33,45 @@ except:
     st.stop()
 
 # ==========================================
-# 2. CSS STYLING (ORBITRON / NEON THEME)
+# 2. DATA ENGINE (MOVED UP)
+# ==========================================
+def get_data():
+    base = "https://api-fxtrade.oanda.com/v3/accounts" if ENVIRONMENT == "live" else "https://api-fxpractice.oanda.com/v3/accounts"
+    headers = {"Authorization": f"Bearer {API_TOKEN}"}
+    try:
+        r1 = requests.get(f"{base}/{ACCOUNT_ID}/summary", headers=headers, timeout=2)
+        r2 = requests.get(f"{base}/{ACCOUNT_ID}/openTrades", headers=headers, timeout=2)
+        if r1.status_code == 200 and r2.status_code == 200:
+            return r1.json()['account'], r2.json()['trades']
+    except:
+        pass
+    return None, None
+
+acct, trades = get_data()
+
+# --- MARGIN CALCULATION LOGIC ---
+real_margin_pct = 0.0
+visual_width = 0.0
+margin_color = "#0be881" # Default Green
+
+if acct:
+    nav_float = float(acct.get('NAV', 1))
+    margin_used = float(acct.get('marginUsed', 0))
+    
+    if nav_float > 0:
+        real_margin_pct = (margin_used / nav_float) * 100
+    
+    # SCALE LOGIC: 0% real = 0% visual, 50% real = 100% visual
+    visual_width = (real_margin_pct / 50) * 100
+    
+    if visual_width > 100: visual_width = 100
+    
+    # Color Logic
+    if real_margin_pct > 30: margin_color = "#ff9f43" 
+    if real_margin_pct > 45: margin_color = "#ff3f34"
+
+# ==========================================
+# 3. CSS STYLING (ORBITRON / NEON THEME)
 # ==========================================
 if st.session_state.secure_mode:
     dash_opacity = "0"
@@ -44,9 +82,9 @@ else:
     dash_pointer = "auto"
     dash_transition = "opacity 0.5s ease-in" 
 
+# Now that margin_color is defined, we can build the CSS
 css_template = f"""
 <style>
-/* IMPORT ORBITRON ONLY */
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap');
 
 .stApp {{
@@ -151,7 +189,8 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 .progress-fill {{
     height: 100%;
     transition: width 0.5s ease-in-out;
-    box-shadow: 0 0 15px {margin_color}; /* Increased glow for Orbitron theme */
+    /* THIS WAS THE ERROR SOURCE - margin_color must be defined first */
+    box-shadow: 0 0 15px {margin_color}; 
 }}
 
 .scale-marker {{
@@ -185,8 +224,8 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     font-family: 'Orbitron', sans-serif; 
     font-size: 12px; 
     color: #808e9b; 
-    font-weight: 900; /* Extra bold for headers */
-    letter-spacing: 2px; /* Wider spacing for sci-fi look */
+    font-weight: 900; 
+    letter-spacing: 2px; 
     margin-bottom: 8px; 
     text-transform: uppercase; 
     padding-left: 4px; 
@@ -201,7 +240,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     margin-top: -10px;
     letter-spacing: -1px; 
     white-space: nowrap;
-    text-shadow: 0 0 10px rgba(11, 232, 129, 0.6); /* Strong neon glow */
+    text-shadow: 0 0 10px rgba(11, 232, 129, 0.6); 
     width: 100%;
     text-align: center;
 }}
@@ -249,7 +288,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 st.markdown(css_template, unsafe_allow_html=True)
 
 # ==========================================
-# 3. JAVASCRIPT INJECTION (CONFETTI)
+# 4. JAVASCRIPT INJECTION (CONFETTI)
 # ==========================================
 confetti_html = """
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -308,7 +347,7 @@ confetti_html = """
 components.html(confetti_html, height=0)
 
 # ==========================================
-# 4. HAPTIC LOGIC
+# 5. HAPTIC LOGIC
 # ==========================================
 if st.session_state.trigger_haptic:
     js_vibration = """<script>try { window.navigator.vibrate(50); } catch(e) {}</script>"""
@@ -316,52 +355,13 @@ if st.session_state.trigger_haptic:
     st.session_state.trigger_haptic = False
 
 # ==========================================
-# 5. TOGGLE BUTTON
+# 6. TOGGLE BUTTON
 # ==========================================
 st.button(" ", on_click=toggle_secure, key="overlay_btn")
 
 # ==========================================
-# 6. DATA ENGINE
-# ==========================================
-def get_data():
-    base = "https://api-fxtrade.oanda.com/v3/accounts" if ENVIRONMENT == "live" else "https://api-fxpractice.oanda.com/v3/accounts"
-    headers = {"Authorization": f"Bearer {API_TOKEN}"}
-    try:
-        r1 = requests.get(f"{base}/{ACCOUNT_ID}/summary", headers=headers, timeout=2)
-        r2 = requests.get(f"{base}/{ACCOUNT_ID}/openTrades", headers=headers, timeout=2)
-        if r1.status_code == 200 and r2.status_code == 200:
-            return r1.json()['account'], r2.json()['trades']
-    except:
-        pass
-    return None, None
-
-# ==========================================
 # 7. RENDER
 # ==========================================
-acct, trades = get_data()
-
-# --- MARGIN CALCULATION LOGIC ---
-real_margin_pct = 0.0
-visual_width = 0.0
-margin_color = "#0be881" # Default Green
-
-if acct:
-    nav_float = float(acct.get('NAV', 1))
-    margin_used = float(acct.get('marginUsed', 0))
-    
-    if nav_float > 0:
-        real_margin_pct = (margin_used / nav_float) * 100
-    
-    # SCALE LOGIC: 0% real = 0% visual, 50% real = 100% visual
-    visual_width = (real_margin_pct / 50) * 100
-    
-    if visual_width > 100: visual_width = 100
-    
-    # Color Logic
-    if real_margin_pct > 30: margin_color = "#ff9f43" 
-    if real_margin_pct > 45: margin_color = "#ff3f34"
-# -------------------------------
-
 # 1. Get raw value
 val_str = "0"
 if acct: 
