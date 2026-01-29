@@ -33,7 +33,45 @@ except:
     st.stop()
 
 # ==========================================
-# 2. CSS STYLING
+# 2. DATA ENGINE
+# ==========================================
+def get_data():
+    base = "https://api-fxtrade.oanda.com/v3/accounts" if ENVIRONMENT == "live" else "https://api-fxpractice.oanda.com/v3/accounts"
+    headers = {"Authorization": f"Bearer {API_TOKEN}"}
+    try:
+        r1 = requests.get(f"{base}/{ACCOUNT_ID}/summary", headers=headers, timeout=2)
+        r2 = requests.get(f"{base}/{ACCOUNT_ID}/openTrades", headers=headers, timeout=2)
+        if r1.status_code == 200 and r2.status_code == 200:
+            return r1.json()['account'], r2.json()['trades']
+    except:
+        pass
+    return None, None
+
+acct, trades = get_data()
+
+# --- MARGIN CALCULATION LOGIC ---
+real_margin_pct = 0.0
+visual_width = 0.0
+margin_color = "#0be881" # Default Green
+
+if acct:
+    nav_float = float(acct.get('NAV', 1))
+    margin_used = float(acct.get('marginUsed', 0))
+    
+    if nav_float > 0:
+        real_margin_pct = (margin_used / nav_float) * 100
+    
+    # SCALE LOGIC: 0% real = 0% visual, 50% real = 100% visual
+    visual_width = (real_margin_pct / 50) * 100
+    
+    if visual_width > 100: visual_width = 100
+    
+    # Color Logic
+    if real_margin_pct > 30: margin_color = "#ff9f43" 
+    if real_margin_pct > 45: margin_color = "#ff3f34"
+
+# ==========================================
+# 3. CSS STYLING (THE DIGITAL CLOCK FIX)
 # ==========================================
 if st.session_state.secure_mode:
     dash_opacity = "0"
@@ -46,7 +84,7 @@ else:
 
 css_template = f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;800&family=Orbitron:wght@500;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap');
 
 .stApp {{
     background-color: #000000 !important;
@@ -128,7 +166,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     overflow: hidden;
 }}
 
-/* --- MARGIN BAR STYLES --- */
 .margin-box {{
     width: 100%;
     margin-top: -5px; 
@@ -150,7 +187,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 .progress-fill {{
     height: 100%;
     transition: width 0.5s ease-in-out;
-    box-shadow: 0 0 8px rgba(255,255,255,0.1);
+    box-shadow: 0 0 15px {margin_color}; 
 }}
 
 .scale-marker {{
@@ -178,29 +215,48 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     width: 100%;
     height: 100%;
 }}
-.label-text {{ font-family: 'Orbitron'; font-size: 12px; color: #808e9b; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; padding-left: 4px; }}
 
+.label-text {{ 
+    font-family: 'Orbitron', sans-serif; 
+    font-size: 12px; 
+    color: #808e9b; 
+    font-weight: 900; 
+    letter-spacing: 2px; 
+    margin-bottom: 8px; 
+    text-transform: uppercase; 
+    padding-left: 4px; 
+}}
+
+/* === THE FIX: DIGIT CLASSES === */
 .nav-value {{ 
-    font-family: 'Martian Mono', monospace; 
+    font-family: 'Orbitron', sans-serif; 
     color: #0be881; 
-    font-weight: 400;  
+    font-weight: 700;  
     line-height: 1; 
     margin-top: -10px;
-    letter-spacing: -2px; 
     white-space: nowrap;
-    text-shadow: none;
+    text-shadow: 0 0 15px rgba(11, 232, 129, 0.7); 
     width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}}
+
+/* This creates a fixed-width box for EACH digit */
+.digit-box {{
+    display: inline-block;
+    width: 0.75em; /* WIDE ENOUGH FOR '8' */
     text-align: center;
 }}
 
 .trade-table {{ 
     width: 100%; 
     color: #dcdde1; 
-    font-family: 'Martian Mono', monospace; 
+    font-family: 'Orbitron', sans-serif; 
     font-size: 11px; 
     border-collapse: collapse; 
-    font-weight: 400; 
-    letter-spacing: -0.5px;
+    font-weight: 500; 
+    letter-spacing: 1px;
     table-layout: fixed; 
 }}
 
@@ -215,6 +271,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    font-weight: 900;
 }}
 
 .trade-table td {{ 
@@ -222,7 +279,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     padding: 10px 2px; 
     text-align: center; 
     font-variant-numeric: tabular-nums; 
-    font-feature-settings: "tnum";
     overflow: hidden;
     white-space: nowrap; 
     text-overflow: ellipsis;
@@ -235,7 +291,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 st.markdown(css_template, unsafe_allow_html=True)
 
 # ==========================================
-# 3. JAVASCRIPT INJECTION (CONFETTI)
+# 4. JAVASCRIPT INJECTION (CONFETTI)
 # ==========================================
 confetti_html = """
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -294,7 +350,7 @@ confetti_html = """
 components.html(confetti_html, height=0)
 
 # ==========================================
-# 4. HAPTIC LOGIC
+# 5. HAPTIC LOGIC
 # ==========================================
 if st.session_state.trigger_haptic:
     js_vibration = """<script>try { window.navigator.vibrate(50); } catch(e) {}</script>"""
@@ -302,52 +358,13 @@ if st.session_state.trigger_haptic:
     st.session_state.trigger_haptic = False
 
 # ==========================================
-# 5. TOGGLE BUTTON
+# 6. TOGGLE BUTTON
 # ==========================================
 st.button(" ", on_click=toggle_secure, key="overlay_btn")
 
 # ==========================================
-# 6. DATA ENGINE
-# ==========================================
-def get_data():
-    base = "https://api-fxtrade.oanda.com/v3/accounts" if ENVIRONMENT == "live" else "https://api-fxpractice.oanda.com/v3/accounts"
-    headers = {"Authorization": f"Bearer {API_TOKEN}"}
-    try:
-        r1 = requests.get(f"{base}/{ACCOUNT_ID}/summary", headers=headers, timeout=2)
-        r2 = requests.get(f"{base}/{ACCOUNT_ID}/openTrades", headers=headers, timeout=2)
-        if r1.status_code == 200 and r2.status_code == 200:
-            return r1.json()['account'], r2.json()['trades']
-    except:
-        pass
-    return None, None
-
-# ==========================================
 # 7. RENDER
 # ==========================================
-acct, trades = get_data()
-
-# --- MARGIN CALCULATION LOGIC ---
-real_margin_pct = 0.0
-visual_width = 0.0
-margin_color = "#0be881" # Default Green
-
-if acct:
-    nav_float = float(acct.get('NAV', 1))
-    margin_used = float(acct.get('marginUsed', 0))
-    
-    if nav_float > 0:
-        real_margin_pct = (margin_used / nav_float) * 100
-    
-    # SCALE LOGIC: 0% real = 0% visual, 50% real = 100% visual
-    visual_width = (real_margin_pct / 50) * 100
-    
-    if visual_width > 100: visual_width = 100
-    
-    # Color Logic
-    if real_margin_pct > 30: margin_color = "#ff9f43" 
-    if real_margin_pct > 45: margin_color = "#ff3f34"
-# -------------------------------
-
 # 1. Get raw value
 val_str = "0"
 if acct: 
@@ -365,7 +382,14 @@ elif char_len <= 8: f_size = "min(11vh, 11vw)"
 elif char_len <= 9: f_size = "min(9vh, 9vw)"     
 else: f_size = "min(7vh, 7vw)"                      
 
-nav_str = f"<span style='font-size: 50%;'>£</span>{val_str}"
+# --- "DIGITAL CLOCK" RENDER LOGIC ---
+# We break the string into characters and wrap each in a fixed-width span
+digits_html = ""
+for char in val_str:
+    digits_html += f'<span class="digit-box">{char}</span>'
+
+# Wrap the Pound Sign in the same class to ensure alignment
+nav_str = f'<span class="digit-box" style="font-size: 50%; vertical-align:middle;">£</span>{digits_html}'
 
 # --- CONDITIONAL COLUMNS CHECK ---
 show_tsl_cols = False
@@ -410,7 +434,6 @@ if show_tsl_cols:
     extra_headers = "<th>TSL</th><th>LOCK</th>"
 
 # --- HTML FLUSHED LEFT TO PREVENT MARKDOWN CODE BLOCK RENDERING ---
-# --- FONT SIZE CHANGED TO 16px ---
 dashboard_html = f"""
 <div class="dashboard-container">
 <div class="nav-box">
@@ -428,7 +451,7 @@ dashboard_html = f"""
 </div>
 <div class="progress-track">
 <div class="scale-marker"></div>
-<div class="progress-fill" style="width: {visual_width}%; background-color: {margin_color}; box-shadow: 0 0 10px {margin_color};"></div>
+<div class="progress-fill" style="width: {visual_width}%; background-color: {margin_color}; box-shadow: 0 0 15px {margin_color};"></div>
 </div>
 </div>
 <div class="trade-box">
@@ -451,4 +474,3 @@ st.markdown(dashboard_html, unsafe_allow_html=True)
 
 time.sleep(2)
 st.rerun()
-
