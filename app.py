@@ -71,7 +71,7 @@ if acct:
     if real_margin_pct > 45: margin_color = "#ff3f34"
 
 # ==========================================
-# 3. CSS STYLING (BASELINE ALIGNMENT)
+# 3. CSS STYLING (DOUBLED SPACING)
 # ==========================================
 if st.session_state.secure_mode:
     dash_opacity = "0"
@@ -236,14 +236,13 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     width: 100%;
     display: flex;
     justify-content: center;
-    
-    /* === CHANGED FROM center TO baseline === */
     align-items: baseline; 
 }}
 
+/* === DOUBLED SPACE === */
 .digit-box {{
     display: inline-block;
-    width: 0.65em; 
+    width: 1.1em; /* INCREASED from 0.65em to 1.1em */
     text-align: center;
 }}
 
@@ -385,7 +384,6 @@ digits_html = ""
 for char in val_str:
     digits_html += f'<span class="digit-box">{char}</span>'
 
-# === REMOVED vertical-align:middle ===
 nav_str = f'<span class="digit-box" style="font-size: 50%;">£</span>{digits_html}'
 
 # --- CONDITIONAL COLUMNS CHECK ---
