@@ -138,7 +138,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 
 .progress-track {{
     width: 100%;
-    height: 24px; /* DOUBLED HEIGHT (was 12px) */
+    height: 24px; 
     background-color: #000000;
     border: 1px solid #485460;
     border-radius: 2px;
@@ -410,7 +410,7 @@ if show_tsl_cols:
     extra_headers = "<th>TSL</th><th>LOCK</th>"
 
 # --- HTML FLUSHED LEFT TO PREVENT MARKDOWN CODE BLOCK RENDERING ---
-# --- FONT SIZE CHANGED TO 20px (DOUBLED) ---
+# --- FONT SIZE CHANGED TO 16px ---
 dashboard_html = f"""
 <div class="dashboard-container">
 <div class="nav-box">
@@ -423,8 +423,8 @@ dashboard_html = f"""
 </div>
 <div class="margin-box">
 <div style="display:flex; justify-content:space-between; align-items:flex-end; padding: 0 2px;">
-<div class="label-text" style="margin:0; font-size:20px;">MARGIN LOAD</div>
-<div class="label-text" style="margin:0; font-size:20px; color:{margin_color};">{real_margin_pct:.1f}%</div>
+<div class="label-text" style="margin:0; font-size:16px;">MARGIN LOAD</div>
+<div class="label-text" style="margin:0; font-size:16px; color:{margin_color};">{real_margin_pct:.1f}%</div>
 </div>
 <div class="progress-track">
 <div class="scale-marker"></div>
