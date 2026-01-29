@@ -71,7 +71,7 @@ if acct:
     if real_margin_pct > 45: margin_color = "#ff3f34"
 
 # ==========================================
-# 3. CSS STYLING (THE DIGITAL CLOCK FIX)
+# 3. CSS STYLING (WIDER SPACING)
 # ==========================================
 if st.session_state.secure_mode:
     dash_opacity = "0"
@@ -187,7 +187,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 .progress-fill {{
     height: 100%;
     transition: width 0.5s ease-in-out;
-    box-shadow: 0 0 15px {margin_color}; 
 }}
 
 .scale-marker {{
@@ -227,7 +226,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     padding-left: 4px; 
 }}
 
-/* === THE FIX: DIGIT CLASSES === */
 .nav-value {{ 
     font-family: 'Orbitron', sans-serif; 
     color: #0be881; 
@@ -235,17 +233,16 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     line-height: 1; 
     margin-top: -10px;
     white-space: nowrap;
-    text-shadow: 0 0 15px rgba(11, 232, 129, 0.7); 
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
 }}
 
-/* This creates a fixed-width box for EACH digit */
+/* === UPDATED SPACING === */
 .digit-box {{
     display: inline-block;
-    width: 0.75em; /* WIDE ENOUGH FOR '8' */
+    width: 0.95em; /* INCREASED FROM 0.75em TO ADD MORE SPACE */
     text-align: center;
 }}
 
@@ -383,12 +380,10 @@ elif char_len <= 9: f_size = "min(9vh, 9vw)"
 else: f_size = "min(7vh, 7vw)"                      
 
 # --- "DIGITAL CLOCK" RENDER LOGIC ---
-# We break the string into characters and wrap each in a fixed-width span
 digits_html = ""
 for char in val_str:
     digits_html += f'<span class="digit-box">{char}</span>'
 
-# Wrap the Pound Sign in the same class to ensure alignment
 nav_str = f'<span class="digit-box" style="font-size: 50%; vertical-align:middle;">£</span>{digits_html}'
 
 # --- CONDITIONAL COLUMNS CHECK ---
@@ -451,7 +446,7 @@ dashboard_html = f"""
 </div>
 <div class="progress-track">
 <div class="scale-marker"></div>
-<div class="progress-fill" style="width: {visual_width}%; background-color: {margin_color}; box-shadow: 0 0 15px {margin_color};"></div>
+<div class="progress-fill" style="width: {visual_width}%; background-color: {margin_color};"></div>
 </div>
 </div>
 <div class="trade-box">
