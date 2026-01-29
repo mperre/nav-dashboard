@@ -33,7 +33,7 @@ except:
     st.stop()
 
 # ==========================================
-# 2. CSS STYLING (ALIENS 2 "SULACO" THEME)
+# 2. CSS STYLING
 # ==========================================
 if st.session_state.secure_mode:
     dash_opacity = "0"
@@ -46,8 +46,7 @@ else:
 
 css_template = f"""
 <style>
-/* IMPORT NEW FONTS: Michroma (Headers) and Share Tech Mono (Data) */
-@import url('https://fonts.googleapis.com/css2?family=Michroma&family=Share+Tech+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;800&family=Orbitron:wght@500;700;900&display=swap');
 
 .stApp {{
     background-color: #000000 !important;
@@ -179,28 +178,17 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     width: 100%;
     height: 100%;
 }}
-
-/* UPDATED FONT STYLES */
-.label-text {{ 
-    font-family: 'Michroma', sans-serif; 
-    font-size: 11px; 
-    color: #808e9b; 
-    font-weight: 400; 
-    letter-spacing: 1px; 
-    margin-bottom: 8px; 
-    text-transform: uppercase; 
-    padding-left: 4px; 
-}}
+.label-text {{ font-family: 'Orbitron'; font-size: 12px; color: #808e9b; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; padding-left: 4px; }}
 
 .nav-value {{ 
-    font-family: 'Share Tech Mono', monospace; 
+    font-family: 'Martian Mono', monospace; 
     color: #0be881; 
     font-weight: 400;  
     line-height: 1; 
     margin-top: -10px;
     letter-spacing: -2px; 
     white-space: nowrap;
-    text-shadow: 0 0 5px rgba(11, 232, 129, 0.4); /* CRT BLOOM */
+    text-shadow: none;
     width: 100%;
     text-align: center;
 }}
@@ -208,11 +196,11 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 .trade-table {{ 
     width: 100%; 
     color: #dcdde1; 
-    font-family: 'Share Tech Mono', monospace; 
-    font-size: 13px; 
+    font-family: 'Martian Mono', monospace; 
+    font-size: 11px; 
     border-collapse: collapse; 
     font-weight: 400; 
-    letter-spacing: 0px;
+    letter-spacing: -0.5px;
     table-layout: fixed; 
 }}
 
@@ -227,8 +215,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    font-family: 'Michroma', sans-serif; /* Headers match the UI labels */
-    font-size: 9px;
 }}
 
 .trade-table td {{ 
@@ -424,6 +410,7 @@ if show_tsl_cols:
     extra_headers = "<th>TSL</th><th>LOCK</th>"
 
 # --- HTML FLUSHED LEFT TO PREVENT MARKDOWN CODE BLOCK RENDERING ---
+# --- FONT SIZE CHANGED TO 16px ---
 dashboard_html = f"""
 <div class="dashboard-container">
 <div class="nav-box">
@@ -464,3 +451,4 @@ st.markdown(dashboard_html, unsafe_allow_html=True)
 
 time.sleep(2)
 st.rerun()
+
