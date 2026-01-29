@@ -33,7 +33,7 @@ except:
     st.stop()
 
 # ==========================================
-# 2. CSS STYLING
+# 2. CSS STYLING (ORBITRON / NEON THEME)
 # ==========================================
 if st.session_state.secure_mode:
     dash_opacity = "0"
@@ -46,7 +46,8 @@ else:
 
 css_template = f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;800&family=Orbitron:wght@500;700;900&display=swap');
+/* IMPORT ORBITRON ONLY */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap');
 
 .stApp {{
     background-color: #000000 !important;
@@ -150,7 +151,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 .progress-fill {{
     height: 100%;
     transition: width 0.5s ease-in-out;
-    box-shadow: 0 0 8px rgba(255,255,255,0.1);
+    box-shadow: 0 0 15px {margin_color}; /* Increased glow for Orbitron theme */
 }}
 
 .scale-marker {{
@@ -178,17 +179,29 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     width: 100%;
     height: 100%;
 }}
-.label-text {{ font-family: 'Orbitron'; font-size: 12px; color: #808e9b; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; padding-left: 4px; }}
 
+/* ORBITRON LABELS */
+.label-text {{ 
+    font-family: 'Orbitron', sans-serif; 
+    font-size: 12px; 
+    color: #808e9b; 
+    font-weight: 900; /* Extra bold for headers */
+    letter-spacing: 2px; /* Wider spacing for sci-fi look */
+    margin-bottom: 8px; 
+    text-transform: uppercase; 
+    padding-left: 4px; 
+}}
+
+/* ORBITRON VALUES */
 .nav-value {{ 
-    font-family: 'Martian Mono', monospace; 
+    font-family: 'Orbitron', sans-serif; 
     color: #0be881; 
-    font-weight: 400;  
+    font-weight: 700;  
     line-height: 1; 
     margin-top: -10px;
-    letter-spacing: -2px; 
+    letter-spacing: -1px; 
     white-space: nowrap;
-    text-shadow: none;
+    text-shadow: 0 0 10px rgba(11, 232, 129, 0.6); /* Strong neon glow */
     width: 100%;
     text-align: center;
 }}
@@ -196,11 +209,11 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 .trade-table {{ 
     width: 100%; 
     color: #dcdde1; 
-    font-family: 'Martian Mono', monospace; 
+    font-family: 'Orbitron', sans-serif; 
     font-size: 11px; 
     border-collapse: collapse; 
-    font-weight: 400; 
-    letter-spacing: -0.5px;
+    font-weight: 500; 
+    letter-spacing: 1px;
     table-layout: fixed; 
 }}
 
@@ -215,6 +228,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    font-weight: 900;
 }}
 
 .trade-table td {{ 
@@ -410,7 +424,6 @@ if show_tsl_cols:
     extra_headers = "<th>TSL</th><th>LOCK</th>"
 
 # --- HTML FLUSHED LEFT TO PREVENT MARKDOWN CODE BLOCK RENDERING ---
-# --- FONT SIZE CHANGED TO 16px ---
 dashboard_html = f"""
 <div class="dashboard-container">
 <div class="nav-box">
@@ -428,7 +441,7 @@ dashboard_html = f"""
 </div>
 <div class="progress-track">
 <div class="scale-marker"></div>
-<div class="progress-fill" style="width: {visual_width}%; background-color: {margin_color}; box-shadow: 0 0 10px {margin_color};"></div>
+<div class="progress-fill" style="width: {visual_width}%; background-color: {margin_color}; box-shadow: 0 0 15px {margin_color};"></div>
 </div>
 </div>
 <div class="trade-box">
@@ -451,4 +464,3 @@ st.markdown(dashboard_html, unsafe_allow_html=True)
 
 time.sleep(2)
 st.rerun()
-
