@@ -25,6 +25,7 @@ try:
         API_TOKEN = st.secrets["API_TOKEN"]
         ENVIRONMENT = st.secrets["ENVIRONMENT"]
     else:
+        # Default/Fallback credentials
         ACCOUNT_ID = "000-000-0000000-000"
         API_TOKEN = "token"
         ENVIRONMENT = "practice"
@@ -43,7 +44,6 @@ else:
     dash_pointer = "auto"
     dash_transition = "opacity 0.5s ease-in" 
 
-# IMPORTED 'Martian Mono'
 css_template = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;800&family=Orbitron:wght@500;700;900&display=swap');
@@ -153,7 +153,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     box-shadow: 0 0 8px rgba(255,255,255,0.1);
 }}
 
-/* Scale Marker (50%) */
 .scale-marker {{
     position: absolute;
     right: 0;
@@ -163,7 +162,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     background: #485460;
     z-index: 2;
 }}
-/* ------------------------- */
 
 .nav-box {{ flex: 1; min-height: 200px; }}
 .trade-box {{ flex: 0 0 auto; max-height: 38vh; display: flex; flex-direction: column; }}
@@ -182,7 +180,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 }}
 .label-text {{ font-family: 'Orbitron'; font-size: 12px; color: #808e9b; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; padding-left: 4px; }}
 
-/* --- NAV VALUE --- */
 .nav-value {{ 
     font-family: 'Martian Mono', monospace; 
     color: #0be881; 
@@ -196,7 +193,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     text-align: center;
 }}
 
-/* --- TRADE TABLE: Fixed Layout --- */
 .trade-table {{ 
     width: 100%; 
     color: #dcdde1; 
@@ -339,28 +335,25 @@ if acct:
     nav_float = float(acct.get('NAV', 1))
     margin_used = float(acct.get('marginUsed', 0))
     
-    # Avoid division by zero
     if nav_float > 0:
         real_margin_pct = (margin_used / nav_float) * 100
     
     # SCALE LOGIC: 0% real = 0% visual, 50% real = 100% visual
-    # Formula: (Real / 50) * 100
     visual_width = (real_margin_pct / 50) * 100
     
-    # Cap at 100% width
     if visual_width > 100: visual_width = 100
     
-    # Color Logic (Warning Zones)
-    if real_margin_pct > 30: margin_color = "#ff9f43" # Orange Warning
-    if real_margin_pct > 45: margin_color = "#ff3f34" # Red Critical
+    # Color Logic
+    if real_margin_pct > 30: margin_color = "#ff9f43" 
+    if real_margin_pct > 45: margin_color = "#ff3f34"
 # -------------------------------
 
-# 1. Get raw value first
+# 1. Get raw value
 val_str = "0"
 if acct: 
     val_str = f"{float(acct['NAV']):.0f}"
 
-# 2. Calculate Visual Length (+1 for the pound sign)
+# 2. Calculate Visual Length
 char_len = len(val_str) + 1
 
 # --- RESIZED to 80% SCREEN WIDTH MAX ---
@@ -372,7 +365,6 @@ elif char_len <= 8: f_size = "min(11vh, 11vw)"
 elif char_len <= 9: f_size = "min(9vh, 9vw)"     
 else: f_size = "min(7vh, 7vw)"                      
 
-# 3. Construct HTML String with 50% size £
 nav_str = f"<span style='font-size: 50%;'>£</span>{val_str}"
 
 # --- CONDITIONAL COLUMNS CHECK ---
@@ -382,7 +374,6 @@ if trades:
         if 'trailingStopLossOrder' in t and t['trailingStopLossOrder'].get('triggerPrice'):
             show_tsl_cols = True
             break
-# ---------------------------------
 
 rows = ""
 if trades:
@@ -394,7 +385,6 @@ if trades:
         pl_color = "#0be881" if pl >= 0 else "#ff9f43"
         dir_color = "#0be881" if u > 0 else "#ff3f34"
         
-        # Calculate TSL/LOCK values
         tsl, l_s, l_c = "-", "-", "#dcdde1"
         
         if 'trailingStopLossOrder' in t:
@@ -406,7 +396,6 @@ if trades:
                 if (u > 0 and tv > entry) or (u < 0 and tv < entry):
                     l_s, l_c = "LOCKED", "#0be881"
         
-        # Construct Row HTML
         extra_cells = ""
         if show_tsl_cols:
             extra_cells = f"<td>{tsl}</td><td style='color:{l_c}; font-weight:bold;'>{l_s}</td>"
@@ -416,48 +405,44 @@ else:
     col_span = "6" if show_tsl_cols else "4"
     rows = f"<tr><td colspan='{col_span}' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
 
-# Construct Header HTML
 extra_headers = ""
 if show_tsl_cols:
     extra_headers = "<th>TSL</th><th>LOCK</th>"
 
-# Flattened Dashboard HTML
+# --- HTML FLUSHED LEFT TO PREVENT MARKDOWN CODE BLOCK RENDERING ---
 dashboard_html = f"""
 <div class="dashboard-container">
-    
-    <div class="nav-box">
-        <div class="screw tl"></div><div class="screw tr"></div>
-        <div class="screw bl"></div><div class="screw br"></div>
-        <div class="label-text">NAV MONITOR</div>
-        <div class="screen">
-            <div class="nav-value" style="font-size: {f_size};">{nav_str}</div>
-        </div>
-    </div>
-
-    <div class="margin-box">
-         <div style="display:flex; justify-content:space-between; align-items:flex-end; padding: 0 2px;">
-            <div class="label-text" style="margin:0; font-size:10px;">MARGIN LOAD</div>
-            <div class="label-text" style="margin:0; font-size:10px; color:{margin_color};">{real_margin_pct:.1f}%</div>
-         </div>
-         <div class="progress-track">
-             <div class="scale-marker"></div> <div class="progress-fill" style="width: {visual_width}%; background-color: {margin_color}; box-shadow: 0 0 10px {margin_color};"></div>
-         </div>
-    </div>
-
-    <div class="trade-box">
-        <div class="screw tl"></div><div class="screw tr"></div>
-        <div class="screw bl"></div><div class="screw br"></div>
-        <div class="label-text">ACTIVE TRANSMISSIONS</div>
-        <div class="screen" style="display:block; padding:0; flex:1; min-height:0; overflow-y:auto;">
-            <table class="trade-table">
-                <thead>
-                    <tr><th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th>{extra_headers}</tr>
-                </thead>
-                <tbody>{rows}</tbody>
-            </table>
-        </div>
-    </div>
-
+<div class="nav-box">
+<div class="screw tl"></div><div class="screw tr"></div>
+<div class="screw bl"></div><div class="screw br"></div>
+<div class="label-text">NAV MONITOR</div>
+<div class="screen">
+<div class="nav-value" style="font-size: {f_size};">{nav_str}</div>
+</div>
+</div>
+<div class="margin-box">
+<div style="display:flex; justify-content:space-between; align-items:flex-end; padding: 0 2px;">
+<div class="label-text" style="margin:0; font-size:10px;">MARGIN LOAD</div>
+<div class="label-text" style="margin:0; font-size:10px; color:{margin_color};">{real_margin_pct:.1f}%</div>
+</div>
+<div class="progress-track">
+<div class="scale-marker"></div>
+<div class="progress-fill" style="width: {visual_width}%; background-color: {margin_color}; box-shadow: 0 0 10px {margin_color};"></div>
+</div>
+</div>
+<div class="trade-box">
+<div class="screw tl"></div><div class="screw tr"></div>
+<div class="screw bl"></div><div class="screw br"></div>
+<div class="label-text">ACTIVE TRANSMISSIONS</div>
+<div class="screen" style="display:block; padding:0; flex:1; min-height:0; overflow-y:auto;">
+<table class="trade-table">
+<thead>
+<tr><th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th>{extra_headers}</tr>
+</thead>
+<tbody>{rows}</tbody>
+</table>
+</div>
+</div>
 </div>
 """
 
