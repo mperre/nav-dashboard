@@ -33,7 +33,7 @@ except:
     st.stop()
 
 # ==========================================
-# 2. DATA ENGINE
+# 2. DATA ENGINE (Calculated first)
 # ==========================================
 def get_data():
     base = "https://api-fxtrade.oanda.com/v3/accounts" if ENVIRONMENT == "live" else "https://api-fxpractice.oanda.com/v3/accounts"
@@ -71,7 +71,7 @@ if acct:
     if real_margin_pct > 45: margin_color = "#ff3f34"
 
 # ==========================================
-# 3. CSS STYLING (HYBRID: ORBITRON + MONOSPACE)
+# 3. CSS STYLING (ORBITRON + TABULAR NUMS)
 # ==========================================
 if st.session_state.secure_mode:
     dash_opacity = "0"
@@ -84,8 +84,8 @@ else:
 
 css_template = f"""
 <style>
-/* IMPORT BOTH FONTS */
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&display=swap');
+/* IMPORT ORBITRON ONLY */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap');
 
 .stApp {{
     background-color: #000000 !important;
@@ -218,7 +218,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     height: 100%;
 }}
 
-/* === ORBITRON FOR HEADERS (Static text) === */
+/* ORBITRON LABELS */
 .label-text {{ 
     font-family: 'Orbitron', sans-serif; 
     font-size: 12px; 
@@ -230,14 +230,19 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     padding-left: 4px; 
 }}
 
-/* === SHARE TECH MONO FOR DATA (Changing numbers) === */
+/* ORBITRON VALUES - FORCED TO MONOSPACE BEHAVIOR */
 .nav-value {{ 
-    font-family: 'Share Tech Mono', monospace; /* MONOSPACE PREVENTS JUMPING */
+    font-family: 'Orbitron', sans-serif; 
     color: #0be881; 
-    font-weight: 400;  
+    font-weight: 700;  
     line-height: 1; 
     margin-top: -10px;
-    letter-spacing: -2px; 
+    
+    /* PREVENTS JUMPING */
+    font-variant-numeric: tabular-nums; 
+    font-feature-settings: "tnum"; 
+    letter-spacing: 0.1em; /* SPACE IT OUT */
+
     white-space: nowrap;
     text-shadow: 0 0 10px rgba(11, 232, 129, 0.6); 
     width: 100%;
@@ -247,11 +252,16 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 .trade-table {{ 
     width: 100%; 
     color: #dcdde1; 
-    font-family: 'Share Tech Mono', monospace; /* MONOSPACE PREVENTS JUMPING */
-    font-size: 13px; 
+    font-family: 'Orbitron', sans-serif; 
+    font-size: 11px; 
     border-collapse: collapse; 
-    font-weight: 400; 
-    letter-spacing: 0px;
+    font-weight: 500; 
+    
+    /* PREVENTS JUMPING IN TABLE */
+    font-variant-numeric: tabular-nums; 
+    font-feature-settings: "tnum"; 
+    letter-spacing: 1px;
+
     table-layout: fixed; 
 }}
 
@@ -266,9 +276,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    font-family: 'Orbitron', sans-serif; /* Headers stay Orbitron */
     font-weight: 900;
-    font-size: 10px;
 }}
 
 .trade-table td {{ 
