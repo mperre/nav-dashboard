@@ -71,7 +71,7 @@ if acct:
     if real_margin_pct > 45: margin_color = "#ff3f34"
 
 # ==========================================
-# 3. CSS STYLING (DOUBLED SPACING)
+# 3. CSS STYLING (REDUCED SPACING)
 # ==========================================
 if st.session_state.secure_mode:
     dash_opacity = "0"
@@ -239,10 +239,10 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     align-items: baseline; 
 }}
 
-/* === DOUBLED SPACE === */
+/* === REDUCED BY 30% === */
 .digit-box {{
     display: inline-block;
-    width: 1.1em; /* INCREASED from 0.65em to 1.1em */
+    width: 0.8em; /* REDUCED from 1.1em */
     text-align: center;
 }}
 
