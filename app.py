@@ -33,7 +33,7 @@ except:
     st.stop()
 
 # ==========================================
-# 2. DATA ENGINE (MOVED UP)
+# 2. DATA ENGINE
 # ==========================================
 def get_data():
     base = "https://api-fxtrade.oanda.com/v3/accounts" if ENVIRONMENT == "live" else "https://api-fxpractice.oanda.com/v3/accounts"
@@ -71,7 +71,7 @@ if acct:
     if real_margin_pct > 45: margin_color = "#ff3f34"
 
 # ==========================================
-# 3. CSS STYLING (ORBITRON / NEON THEME)
+# 3. CSS STYLING (HYBRID: ORBITRON + MONOSPACE)
 # ==========================================
 if st.session_state.secure_mode:
     dash_opacity = "0"
@@ -82,10 +82,10 @@ else:
     dash_pointer = "auto"
     dash_transition = "opacity 0.5s ease-in" 
 
-# Now that margin_color is defined, we can build the CSS
 css_template = f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap');
+/* IMPORT BOTH FONTS */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&display=swap');
 
 .stApp {{
     background-color: #000000 !important;
@@ -189,7 +189,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 .progress-fill {{
     height: 100%;
     transition: width 0.5s ease-in-out;
-    /* THIS WAS THE ERROR SOURCE - margin_color must be defined first */
     box-shadow: 0 0 15px {margin_color}; 
 }}
 
@@ -219,7 +218,7 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     height: 100%;
 }}
 
-/* ORBITRON LABELS */
+/* === ORBITRON FOR HEADERS (Static text) === */
 .label-text {{ 
     font-family: 'Orbitron', sans-serif; 
     font-size: 12px; 
@@ -231,14 +230,14 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     padding-left: 4px; 
 }}
 
-/* ORBITRON VALUES */
+/* === SHARE TECH MONO FOR DATA (Changing numbers) === */
 .nav-value {{ 
-    font-family: 'Orbitron', sans-serif; 
+    font-family: 'Share Tech Mono', monospace; /* MONOSPACE PREVENTS JUMPING */
     color: #0be881; 
-    font-weight: 700;  
+    font-weight: 400;  
     line-height: 1; 
     margin-top: -10px;
-    letter-spacing: -1px; 
+    letter-spacing: -2px; 
     white-space: nowrap;
     text-shadow: 0 0 10px rgba(11, 232, 129, 0.6); 
     width: 100%;
@@ -248,11 +247,11 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
 .trade-table {{ 
     width: 100%; 
     color: #dcdde1; 
-    font-family: 'Orbitron', sans-serif; 
-    font-size: 11px; 
+    font-family: 'Share Tech Mono', monospace; /* MONOSPACE PREVENTS JUMPING */
+    font-size: 13px; 
     border-collapse: collapse; 
-    font-weight: 500; 
-    letter-spacing: 1px;
+    font-weight: 400; 
+    letter-spacing: 0px;
     table-layout: fixed; 
 }}
 
@@ -267,7 +266,9 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    font-family: 'Orbitron', sans-serif; /* Headers stay Orbitron */
     font-weight: 900;
+    font-size: 10px;
 }}
 
 .trade-table td {{ 
