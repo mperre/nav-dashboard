@@ -59,19 +59,23 @@ if acct:
     margin_used = float(acct.get('marginUsed', 0))
     
     if nav_float > 0:
+        # Actual percentage of NAV currently used as margin
         real_margin_pct = (margin_used / nav_float) * 100
     
-    # SCALE LOGIC: 0% real = 0% visual, 50% real = 100% visual
+    # SCALE LOGIC: 0% real = 0% visual, 50% real = 100% visual (OANDA MCO limit)
     visual_width = (real_margin_pct / 50) * 100
     
-    if visual_width > 100: visual_width = 100
+    if visual_width > 100: 
+        visual_width = 100
     
-    # Color Logic
-    if real_margin_pct > 30: margin_color = "#ff9f43" 
-    if real_margin_pct > 45: margin_color = "#ff3f34"
+    # Color Logic based on proximity to the 50% limit
+    if real_margin_pct > 30: 
+        margin_color = "#ff9f43" # Warning
+    if real_margin_pct > 45: 
+        margin_color = "#ff3f34" # Danger / Near MCO
 
 # ==========================================
-# 3. CSS STYLING (REDUCED BY ANOTHER 5%)
+# 3. CSS STYLING
 # ==========================================
 if st.session_state.secure_mode:
     dash_opacity = "0"
@@ -123,12 +127,6 @@ div.stButton > button {{
     border-radius: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
-}}
-div.stButton > button:hover, div.stButton > button:active, div.stButton > button:focus {{
-    background-color: transparent !important;
-    border: none !important;
-    color: transparent !important;
-    box-shadow: none !important;
 }}
 
 .block-container {{
@@ -195,8 +193,9 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     top: 0;
     height: 100%;
     width: 2px;
-    background: #485460;
+    background: #ff3f34;
     z-index: 2;
+    box-shadow: 0 0 8px #ff3f34;
 }}
 
 .nav-box {{ flex: 1; min-height: 200px; }}
@@ -206,7 +205,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     background-color: #000000;
     border: 2px solid #2d3436;
     border-radius: 4px;
-    box-shadow: inset 0 0 30px rgba(255,255,255,0.02);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -239,10 +237,9 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     align-items: baseline; 
 }}
 
-/* === REDUCED BY 5% MORE === */
 .digit-box {{
     display: inline-block;
-    width: 0.76em; /* REDUCED from 0.8em */
+    width: 0.76em;
     text-align: center;
 }}
 
@@ -265,9 +262,6 @@ div.stButton > button:hover, div.stButton > button:active, div.stButton > button
     background: #050505; 
     position: sticky; 
     top: 0; 
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
     font-weight: 900;
 }}
 
@@ -299,7 +293,6 @@ confetti_html = """
 
     function shootConfetti() {
         try { window.navigator.vibrate(200); } catch(e) {}
-        
         var duration = 3000;
         var animationEnd = Date.now() + duration;
         var defaults = { startVelocity: 45, spread: 360, ticks: 60, zIndex: 2147483647 };
@@ -315,7 +308,6 @@ confetti_html = """
             }));
         }, 250);
         
-        // BLAST
         confetti({
             particleCount: 150, spread: 120, origin: { y: 1 },
             colors: ['#0be881', '#ffffff', '#57606f'],
@@ -333,8 +325,6 @@ confetti_html = """
         let touchEndY = e.changedTouches[0].screenY;
         let diffX = touchEndX - touchStartX;
         let diffY = touchEndY - touchStartY;
-
-        // SWIPE THRESHOLD: > 30px horizontal
         if (Math.abs(diffX) > 30 && Math.abs(diffX) > Math.abs(diffY)) {
             shootConfetti();
         }
@@ -362,15 +352,12 @@ st.button(" ", on_click=toggle_secure, key="overlay_btn")
 # ==========================================
 # 7. RENDER
 # ==========================================
-# 1. Get raw value
 val_str = "0"
 if acct: 
     val_str = f"{float(acct['NAV']):.0f}"
 
-# 2. Calculate Visual Length
 char_len = len(val_str) + 1
 
-# --- RESIZED to 80% SCREEN WIDTH MAX ---
 if char_len <= 4: f_size = "min(27vh, 27vw)"      
 elif char_len <= 5: f_size = "min(21.5vh, 21.5vw)"     
 elif char_len <= 6: f_size = "min(18.5vh, 18.5vw)"     
@@ -379,14 +366,12 @@ elif char_len <= 8: f_size = "min(11vh, 11vw)"
 elif char_len <= 9: f_size = "min(9vh, 9vw)"     
 else: f_size = "min(7vh, 7vw)"                      
 
-# --- "DIGITAL CLOCK" RENDER LOGIC ---
 digits_html = ""
 for char in val_str:
     digits_html += f'<span class="digit-box">{char}</span>'
 
 nav_str = f'<span class="digit-box" style="font-size: 50%;">£</span>{digits_html}'
 
-# --- CONDITIONAL COLUMNS CHECK ---
 show_tsl_cols = False
 if trades:
     for t in trades:
@@ -428,40 +413,39 @@ extra_headers = ""
 if show_tsl_cols:
     extra_headers = "<th>TSL</th><th>LOCK</th>"
 
-# --- HTML FLUSHED LEFT TO PREVENT MARKDOWN CODE BLOCK RENDERING ---
 dashboard_html = f"""
 <div class="dashboard-container">
-<div class="nav-box">
-<div class="screw tl"></div><div class="screw tr"></div>
-<div class="screw bl"></div><div class="screw br"></div>
-<div class="label-text">NAV MONITOR</div>
-<div class="screen">
-<div class="nav-value" style="font-size: {f_size};">{nav_str}</div>
-</div>
-</div>
-<div class="margin-box">
-<div style="display:flex; justify-content:space-between; align-items:flex-end; padding: 0 2px;">
-<div class="label-text" style="margin:0; font-size:16px;">MARGIN LOAD</div>
-<div class="label-text" style="margin:0; font-size:16px; color:{margin_color};">{real_margin_pct:.1f}%</div>
-</div>
-<div class="progress-track">
-<div class="scale-marker"></div>
-<div class="progress-fill" style="width: {visual_width}%; background-color: {margin_color};"></div>
-</div>
-</div>
-<div class="trade-box">
-<div class="screw tl"></div><div class="screw tr"></div>
-<div class="screw bl"></div><div class="screw br"></div>
-<div class="label-text">ACTIVE TRANSMISSIONS</div>
-<div class="screen" style="display:block; padding:0; flex:1; min-height:0; overflow-y:auto;">
-<table class="trade-table">
-<thead>
-<tr><th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th>{extra_headers}</tr>
-</thead>
-<tbody>{rows}</tbody>
-</table>
-</div>
-</div>
+    <div class="nav-box">
+        <div class="screw tl"></div><div class="screw tr"></div>
+        <div class="screw bl"></div><div class="screw br"></div>
+        <div class="label-text">NAV MONITOR</div>
+        <div class="screen">
+            <div class="nav-value" style="font-size: {f_size};">{nav_str}</div>
+        </div>
+    </div>
+    <div class="margin-box">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; padding: 0 2px;">
+            <div class="label-text" style="margin:0; font-size:16px;">MARGIN LOAD</div>
+            <div class="label-text" style="margin:0; font-size:16px; color:{margin_color};">{real_margin_pct:.1f}% / 50.0%</div>
+        </div>
+        <div class="progress-track">
+            <div class="scale-marker"></div>
+            <div class="progress-fill" style="width: {visual_width}%; background-color: {margin_color};"></div>
+        </div>
+    </div>
+    <div class="trade-box">
+        <div class="screw tl"></div><div class="screw tr"></div>
+        <div class="screw bl"></div><div class="screw br"></div>
+        <div class="label-text">ACTIVE TRANSMISSIONS</div>
+        <div class="screen" style="display:block; padding:0; flex:1; min-height:0; overflow-y:auto;">
+            <table class="trade-table">
+                <thead>
+                    <tr><th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th>{extra_headers}</tr>
+                </thead>
+                <tbody>{rows}</tbody>
+            </table>
+        </div>
+    </div>
 </div>
 """
 
