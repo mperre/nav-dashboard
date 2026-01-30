@@ -25,6 +25,7 @@ try:
         API_TOKEN = st.secrets["API_TOKEN"]
         ENVIRONMENT = st.secrets["ENVIRONMENT"]
     else:
+        # Default credentials
         ACCOUNT_ID = "000-000-0000000-000"
         API_TOKEN = "token"
         ENVIRONMENT = "practice"
@@ -56,7 +57,6 @@ margin_color = "#0be881" # Default Green
 if acct:
     nav_float = float(acct.get('NAV', 1))
     margin_used = float(acct.get('marginUsed', 0))
-    
     if nav_float > 0:
         real_margin_pct = (margin_used / nav_float) * 100
     
@@ -64,7 +64,6 @@ if acct:
     visual_width = (real_margin_pct / 50) * 100
     if visual_width > 100: visual_width = 100
     
-    # Color Thresholds
     if real_margin_pct > 30: margin_color = "#ff9f43" 
     if real_margin_pct > 45: margin_color = "#ff3f34" 
 
@@ -82,22 +81,24 @@ css_template = f"""
 #MainMenu, footer, header {{visibility: hidden !important;}}
 [data-testid="stToolbar"] {{display: none !important;}}
 
+/* Reset Streamlit default padding */
 .block-container {{
     margin-top: -55px !important; 
-    padding: 27px 10px 0 10px !important;
+    padding: 20px 10px 0 10px !important;
     max-width: 100% !important;
     height: 100vh !important;
     display: flex;
     flex-direction: column;
 }}
 
+/* FLEX CONTAINER */
 .dashboard-container {{
     opacity: {dash_opacity};
     pointer-events: {dash_pointer};
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    height: 100%;
+    gap: 12px;
+    height: calc(100vh - 30px);
 }}
 
 .nav-box, .trade-box {{
@@ -106,9 +107,28 @@ css_template = f"""
     border-radius: 6px;
     padding: 10px;
     position: relative;
+    display: flex;
+    flex-direction: column;
 }}
 
-/* --- BLEND MODE PROGRESS BAR --- */
+/* --- DYNAMIC SIZING --- */
+.nav-box {{ 
+    flex: 1 1 auto; 
+    min-height: 140px; 
+}}
+
+.margin-box-wrapper {{
+    flex: 0 0 auto;
+    padding: 0 5px;
+}}
+
+.trade-box {{ 
+    flex: 0 1 auto; 
+    max-height: 65vh; 
+    overflow: hidden;
+}}
+
+/* --- INTERNAL GRAPHICS --- */
 .margin-container {{
     position: relative;
     width: 100%;
@@ -116,7 +136,7 @@ css_template = f"""
     background: #000000;
     border: 1px solid #485460;
     border-radius: 3px;
-    overflow: hidden; /* Contains the bar */
+    overflow: hidden;
     margin-top: 5px;
 }}
 
@@ -131,7 +151,7 @@ css_template = f"""
     font-weight: 900;
     font-size: 14px;
     letter-spacing: 1px;
-    color: {margin_color}; /* Text is colored by default */
+    color: {margin_color};
     z-index: 1;
 }}
 
@@ -143,13 +163,9 @@ css_template = f"""
     width: {visual_width}%;
     background-color: {margin_color};
     z-index: 2;
-    /* This creates the cutout effect: Green Bar - Green Text = Black Text */
     mix-blend-mode: difference; 
     transition: width 0.5s ease-in-out;
 }}
-
-.nav-box {{ flex: 1; min-height: 200px; display: flex; flex-direction: column; }}
-.trade-box {{ flex: 0 0 auto; max-height: 35vh; overflow: hidden; display: flex; flex-direction: column; }}
 
 .screen {{
     background: #000;
@@ -158,13 +174,22 @@ css_template = f"""
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden; 
+    position: relative;
 }}
 
 .nav-value {{ font-family: 'Orbitron', sans-serif; color: #0be881; font-weight: 700; }}
-.digit-box {{ display: inline-block; width: 0.76em; text-align: center; }}
+
+/* ADJUSTED FOR SEPARATION */
+.digit-box {{ 
+    display: inline-block; 
+    width: 1.0em; /* Increased width */
+    text-align: center; 
+    margin: 0 2px; /* Added spacing between digits */
+}}
 
 .trade-table {{ width: 100%; color: #dcdde1; font-family: 'Orbitron', sans-serif; font-size: 11px; border-collapse: collapse; }}
-.trade-table th {{ border-bottom: 1px solid #485460; padding: 8px; color: #808e9b; background: #050505; position: sticky; top: 0; }}
+.trade-table th {{ border-bottom: 1px solid #485460; padding: 8px; color: #808e9b; background: #050505; position: sticky; top: 0; z-index: 10; }}
 .trade-table td {{ border-bottom: 1px solid #2d3436; padding: 10px; text-align: center; }}
 
 .screw {{ position: absolute; width: 6px; height: 6px; background: #57606f; border-radius: 50%; }}
@@ -174,7 +199,7 @@ css_template = f"""
 st.markdown(css_template, unsafe_allow_html=True)
 
 # ==========================================
-# 4. RENDER (FLUSH LEFT HTML)
+# 4. RENDER
 # ==========================================
 st.button(" ", on_click=toggle_secure, key="overlay_btn")
 
@@ -191,23 +216,27 @@ if trades:
         pl_c = "#0be881" if pl >= 0 else "#ff9f43"
         rows += f"<tr><td>{side}</td><td>{u}</td><td>{t['instrument']}</td><td style='color:{pl_c}'>£{pl:.2f}</td></tr>"
 else:
-    rows = "<tr><td colspan='4'>NO ACTIVE TRADES</td></tr>"
+    rows = "<tr><td colspan='4' style='padding:20px; color:#57606f; font-style:italic;'>NO ACTIVE TRADES</td></tr>"
 
-# IMPORTANT: The string below is flush left to prevent Markdown code-block rendering
 dashboard_html = f"""
 <div class="dashboard-container">
+
 <div class="nav-box">
 <div class="screw tl"></div><div class="screw tr"></div><div class="screw bl"></div><div class="screw br"></div>
 <div style="font-family:'Orbitron'; color:#808e9b; font-size:12px; margin-bottom:5px;">NAV MONITOR</div>
-<div class="screen"><div class="nav-value" style="font-size:{f_size}">{nav_html}</div></div>
+<div class="screen">
+<div class="nav-value" style="font-size:{f_size}">{nav_html}</div>
 </div>
-<div style="padding:0 5px;">
+</div>
+
+<div class="margin-box-wrapper">
 <div style="font-family:'Orbitron'; color:#808e9b; font-size:12px;">MARGIN LOAD</div>
 <div class="margin-container">
 <div class="margin-text">{real_margin_pct:.1f}%</div>
 <div class="progress-bar"></div>
 </div>
 </div>
+
 <div class="trade-box">
 <div class="screw tl"></div><div class="screw tr"></div><div class="screw bl"></div><div class="screw br"></div>
 <div style="font-family:'Orbitron'; color:#808e9b; font-size:12px; margin-bottom:5px;">TRANSMISSIONS</div>
@@ -218,6 +247,7 @@ dashboard_html = f"""
 </table>
 </div>
 </div>
+
 </div>
 """
 
