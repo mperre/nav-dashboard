@@ -59,20 +59,19 @@ if acct:
     margin_used = float(acct.get('marginUsed', 0))
     
     if nav_float > 0:
-        # Actual percentage of NAV currently used as margin
         real_margin_pct = (margin_used / nav_float) * 100
     
-    # SCALE LOGIC: 0% real = 0% visual, 50% real = 100% visual (OANDA MCO limit)
+    # SCALE LOGIC: 0% real = 0% visual, 50% real = 100% visual
     visual_width = (real_margin_pct / 50) * 100
     
     if visual_width > 100: 
         visual_width = 100
     
-    # Color Logic based on proximity to the 50% limit
+    # Color Logic
     if real_margin_pct > 30: 
-        margin_color = "#ff9f43" # Warning
+        margin_color = "#ff9f43" 
     if real_margin_pct > 45: 
-        margin_color = "#ff3f34" # Danger / Near MCO
+        margin_color = "#ff3f34" 
 
 # ==========================================
 # 3. CSS STYLING
@@ -171,20 +170,46 @@ div.stButton > button {{
     padding: 0 4px;
 }}
 
+/* --- PROGRESS BAR LAYER LOGIC --- */
 .progress-track {{
     width: 100%;
-    height: 24px; 
+    height: 30px; 
     background-color: #000000;
     border: 1px solid #485460;
     border-radius: 2px;
     margin-top: 4px;
     position: relative;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: {margin_color}; /* Color when NOT covered */
 }}
 
 .progress-fill {{
+    position: absolute;
+    left: 0;
+    top: 0;
     height: 100%;
     transition: width 0.5s ease-in-out;
+    overflow: hidden; /* Critical for the text clipping */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}}
+
+.progress-text-overlay {{
+    position: absolute;
+    width: 100vw; /* Keeps text centered relative to account, not the fill width */
+    left: 0;
+    text-align: center;
+    color: #000000; /* Color when COVERED */
+    pointer-events: none;
 }}
 
 .scale-marker {{
@@ -194,7 +219,7 @@ div.stButton > button {{
     height: 100%;
     width: 2px;
     background: #ff3f34;
-    z-index: 2;
+    z-index: 3;
     box-shadow: 0 0 8px #ff3f34;
 }}
 
@@ -315,19 +340,11 @@ confetti_html = """
         });
     }
 
-    function onTouchStart(e) {
-        touchStartX = e.changedTouches[0].screenX;
-        touchStartY = e.changedTouches[0].screenY;
-    }
-
+    function onTouchStart(e) { touchStartX = e.changedTouches[0].screenX; touchStartY = e.changedTouches[0].screenY; }
     function onTouchEnd(e) {
         let touchEndX = e.changedTouches[0].screenX;
         let touchEndY = e.changedTouches[0].screenY;
-        let diffX = touchEndX - touchStartX;
-        let diffY = touchEndY - touchStartY;
-        if (Math.abs(diffX) > 30 && Math.abs(diffX) > Math.abs(diffY)) {
-            shootConfetti();
-        }
+        if (Math.abs(touchEndX - touchStartX) > 30) shootConfetti();
     }
 
     doc.addEventListener('touchstart', onTouchStart, true);
@@ -337,39 +354,27 @@ confetti_html = """
 components.html(confetti_html, height=0)
 
 # ==========================================
-# 5. HAPTIC LOGIC
+# 5. RENDER LOGIC
 # ==========================================
 if st.session_state.trigger_haptic:
-    js_vibration = """<script>try { window.navigator.vibrate(50); } catch(e) {}</script>"""
-    components.html(js_vibration, height=0)
+    components.html("""<script>try { window.navigator.vibrate(50); } catch(e) {}</script>""", height=0)
     st.session_state.trigger_haptic = False
 
-# ==========================================
-# 6. TOGGLE BUTTON
-# ==========================================
 st.button(" ", on_click=toggle_secure, key="overlay_btn")
 
-# ==========================================
-# 7. RENDER
-# ==========================================
 val_str = "0"
 if acct: 
     val_str = f"{float(acct['NAV']):.0f}"
 
 char_len = len(val_str) + 1
-
 if char_len <= 4: f_size = "min(27vh, 27vw)"      
 elif char_len <= 5: f_size = "min(21.5vh, 21.5vw)"     
 elif char_len <= 6: f_size = "min(18.5vh, 18.5vw)"     
 elif char_len <= 7: f_size = "min(14.5vh, 14.5vw)"     
 elif char_len <= 8: f_size = "min(11vh, 11vw)"     
-elif char_len <= 9: f_size = "min(9vh, 9vw)"     
-else: f_size = "min(7vh, 7vw)"                      
+else: f_size = "min(9vh, 9vw)"                      
 
-digits_html = ""
-for char in val_str:
-    digits_html += f'<span class="digit-box">{char}</span>'
-
+digits_html = "".join([f'<span class="digit-box">{char}</span>' for char in val_str])
 nav_str = f'<span class="digit-box" style="font-size: 50%;">£</span>{digits_html}'
 
 show_tsl_cols = False
@@ -388,30 +393,22 @@ if trades:
         side = "LONG" if u > 0 else "SHORT"
         pl_color = "#0be881" if pl >= 0 else "#ff9f43"
         dir_color = "#0be881" if u > 0 else "#ff3f34"
-        
         tsl, l_s, l_c = "-", "-", "#dcdde1"
-        
         if 'trailingStopLossOrder' in t:
             trig = t['trailingStopLossOrder'].get('triggerPrice')
             if trig:
                 tv = float(trig)
                 tsl = f"{tv:.3f}"
                 l_s, l_c = "WAIT", "#ff9f43"
-                if (u > 0 and tv > entry) or (u < 0 and tv < entry):
-                    l_s, l_c = "LOCKED", "#0be881"
-        
-        extra_cells = ""
-        if show_tsl_cols:
-            extra_cells = f"<td>{tsl}</td><td style='color:{l_c}; font-weight:bold;'>{l_s}</td>"
-
+                if (u > 0 and tv > entry) or (u < 0 and tv < entry): l_s, l_c = "LOCKED", "#0be881"
+        extra_cells = f"<td>{tsl}</td><td style='color:{l_c}; font-weight:bold;'>{l_s}</td>" if show_tsl_cols else ""
         rows += f"<tr><td style='color: {dir_color}'>{side}</td><td>{u:.1f}</td><td>{t['instrument'].replace('_','/')}</td><td style='color:{pl_color}'>£{pl:.2f}</td>{extra_cells}</tr>"
 else:
-    col_span = "6" if show_tsl_cols else "4"
-    rows = f"<tr><td colspan='{col_span}' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
+    rows = f"<tr><td colspan='{6 if show_tsl_cols else 4}' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
 
-extra_headers = ""
-if show_tsl_cols:
-    extra_headers = "<th>TSL</th><th>LOCK</th>"
+extra_headers = "<th>TSL</th><th>LOCK</th>" if show_tsl_cols else ""
+
+margin_display_text = f"{real_margin_pct:.1f}%"
 
 dashboard_html = f"""
 <div class="dashboard-container">
@@ -423,25 +420,25 @@ dashboard_html = f"""
             <div class="nav-value" style="font-size: {f_size};">{nav_str}</div>
         </div>
     </div>
+    
     <div class="margin-box">
-        <div style="display:flex; justify-content:space-between; align-items:flex-end; padding: 0 2px;">
-            <div class="label-text" style="margin:0; font-size:16px;">MARGIN LOAD</div>
-            <div class="label-text" style="margin:0; font-size:16px; color:{margin_color};">{real_margin_pct:.1f}% / 50.0%</div>
-        </div>
+        <div class="label-text" style="margin-bottom:4px;">MARGIN LOAD</div>
         <div class="progress-track">
-            <div class="scale-marker"></div>
-            <div class="progress-fill" style="width: {visual_width}%; background-color: {margin_color};"></div>
+            {margin_display_text}
+            <div class="progress-fill" style="width: {visual_width}%; background-color: {margin_color};">
+                <div class="progress-text-overlay">{margin_display_text}</div>
+                <div class="scale-marker"></div>
+            </div>
         </div>
     </div>
+
     <div class="trade-box">
         <div class="screw tl"></div><div class="screw tr"></div>
         <div class="screw bl"></div><div class="screw br"></div>
         <div class="label-text">ACTIVE TRANSMISSIONS</div>
         <div class="screen" style="display:block; padding:0; flex:1; min-height:0; overflow-y:auto;">
             <table class="trade-table">
-                <thead>
-                    <tr><th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th>{extra_headers}</tr>
-                </thead>
+                <thead><tr><th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th>{extra_headers}</tr></thead>
                 <tbody>{rows}</tbody>
             </table>
         </div>
