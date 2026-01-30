@@ -25,7 +25,6 @@ try:
         API_TOKEN = st.secrets["API_TOKEN"]
         ENVIRONMENT = st.secrets["ENVIRONMENT"]
     else:
-        # Default/Fallback credentials
         ACCOUNT_ID = "000-000-0000000-000"
         API_TOKEN = "token"
         ENVIRONMENT = "practice"
@@ -49,107 +48,53 @@ def get_data():
 
 acct, trades = get_data()
 
-# --- MARGIN CALCULATION LOGIC ---
 real_margin_pct = 0.0
 visual_width = 0.0
-margin_color = "#0be881" # Default Green
+margin_color = "#0be881" 
 
 if acct:
     nav_float = float(acct.get('NAV', 1))
     margin_used = float(acct.get('marginUsed', 0))
-    
     if nav_float > 0:
         real_margin_pct = (margin_used / nav_float) * 100
     
-    # SCALE LOGIC: 0% real = 0% visual, 50% real = 100% visual
+    # Scale: 50% real margin = 100% full bar
     visual_width = (real_margin_pct / 50) * 100
+    if visual_width > 100: visual_width = 100
     
-    if visual_width > 100: 
-        visual_width = 100
-    
-    # Color Logic
-    if real_margin_pct > 30: 
-        margin_color = "#ff9f43" 
-    if real_margin_pct > 45: 
-        margin_color = "#ff3f34" 
+    if real_margin_pct > 30: margin_color = "#ff9f43" 
+    if real_margin_pct > 45: margin_color = "#ff3f34" 
 
 # ==========================================
 # 3. CSS STYLING
 # ==========================================
-if st.session_state.secure_mode:
-    dash_opacity = "0"
-    dash_pointer = "none"
-    dash_transition = "opacity 0s" 
-else:
-    dash_opacity = "1"
-    dash_pointer = "auto"
-    dash_transition = "opacity 0.5s ease-in" 
+dash_opacity = "0" if st.session_state.secure_mode else "1"
+dash_pointer = "none" if st.session_state.secure_mode else "auto"
 
 css_template = f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
-.stApp {{
-    background-color: #000000 !important;
-    overflow: hidden !important; 
-}}
-
+.stApp {{ background-color: #000000 !important; overflow: hidden !important; }}
 #MainMenu, footer, header {{visibility: hidden !important;}}
-[data-testid="stToolbar"], [data-testid="stDecoration"], [data-testid="stStatusWidget"] {{display: none !important;}}
-
-::-webkit-scrollbar {{ display: none; }}
-* {{ -ms-overflow-style: none; scrollbar-width: none; }}
-
-iframe {{
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    z-index: 2147483647 !important; 
-    pointer-events: none !important; 
-    background: transparent !important;
-    border: none !important;
-}}
-
-div.stButton > button {{
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    z-index: 999999 !important;
-    background-color: transparent !important;
-    border: none !important;
-    color: transparent !important;
-    cursor: default !important; 
-    border-radius: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}}
+[data-testid="stToolbar"] {{display: none !important;}}
 
 .block-container {{
-    margin: 0 !important;
     margin-top: -55px !important; 
     padding: 27px 10px 0 10px !important;
     max-width: 100% !important;
-    height: 100vh !important; 
-    min-height: 100vh !important;
-    overflow: hidden !important;
+    height: 100vh !important;
     display: flex;
     flex-direction: column;
 }}
 
 .dashboard-container {{
-    height: calc(100vh - 74px);
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 15px; 
-    box-sizing: border-box;
     opacity: {dash_opacity};
     pointer-events: {dash_pointer};
-    transition: {dash_transition}; 
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    height: 100%;
 }}
 
 .nav-box, .trade-box {{
@@ -158,36 +103,32 @@ div.stButton > button {{
     border-radius: 6px;
     padding: 10px;
     position: relative;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
 }}
 
-.margin-box {{
-    width: 100%;
-    margin-top: -5px; 
-    margin-bottom: -5px;
-    padding: 0 4px;
-}}
-
-/* --- PROGRESS BAR LAYER LOGIC --- */
-.progress-track {{
-    width: 100%;
-    height: 30px; 
-    background-color: #000000;
-    border: 1px solid #485460;
-    border-radius: 2px;
-    margin-top: 4px;
+/* --- PROGRESS BAR CLIP LOGIC --- */
+.margin-container {{
     position: relative;
+    width: 100%;
+    height: 34px;
+    background: #000;
+    border: 1px solid #485460;
+    border-radius: 3px;
     overflow: hidden;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 16px;
+    margin-top: 5px;
+}}
+
+.base-text {{
+    position: absolute;
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'Orbitron', sans-serif;
-    font-weight: 900;
-    font-size: 14px;
-    letter-spacing: 2px;
-    color: {margin_color}; /* Color when NOT covered */
+    color: {margin_color};
+    z-index: 1;
 }}
 
 .progress-fill {{
@@ -195,250 +136,95 @@ div.stButton > button {{
     left: 0;
     top: 0;
     height: 100%;
+    background-color: {margin_color};
+    width: {visual_width}%;
+    z-index: 2;
     transition: width 0.5s ease-in-out;
-    overflow: hidden; /* Critical for the text clipping */
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 2;
+    overflow: hidden;
 }}
 
-.progress-text-overlay {{
+.overlay-text {{
     position: absolute;
-    width: 100vw; /* Keeps text centered relative to account, not the fill width */
+    width: 100vw;
     left: 0;
-    text-align: center;
-    color: #000000; /* Color when COVERED */
-    pointer-events: none;
+    display: flex;
+    justify-content: center;
+    color: #000;
 }}
 
-.scale-marker {{
-    position: absolute;
-    right: 0;
-    top: 0;
-    height: 100%;
-    width: 2px;
-    background: #ff3f34;
-    z-index: 3;
-    box-shadow: 0 0 8px #ff3f34;
-}}
-
-.nav-box {{ flex: 1; min-height: 200px; }}
-.trade-box {{ flex: 0 0 auto; max-height: 38vh; display: flex; flex-direction: column; }}
+.nav-box {{ flex: 1; min-height: 200px; display: flex; flex-direction: column; }}
+.trade-box {{ flex: 0 0 auto; max-height: 35vh; overflow: hidden; display: flex; flex-direction: column; }}
 
 .screen {{
-    background-color: #000000;
+    background: #000;
     border: 2px solid #2d3436;
-    border-radius: 4px;
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    width: 100%;
-    height: 100%;
 }}
 
-.label-text {{ 
-    font-family: 'Orbitron', sans-serif; 
-    font-size: 12px; 
-    color: #808e9b; 
-    font-weight: 900; 
-    letter-spacing: 2px; 
-    margin-bottom: 8px; 
-    text-transform: uppercase; 
-    padding-left: 4px; 
-}}
+.nav-value {{ font-family: 'Orbitron', sans-serif; color: #0be881; font-weight: 700; }}
+.digit-box {{ display: inline-block; width: 0.76em; text-align: center; }}
 
-.nav-value {{ 
-    font-family: 'Orbitron', sans-serif; 
-    color: #0be881; 
-    font-weight: 700;  
-    line-height: 1; 
-    margin-top: -10px;
-    white-space: nowrap;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: baseline; 
-}}
+.trade-table {{ width: 100%; color: #dcdde1; font-family: 'Orbitron', sans-serif; font-size: 11px; border-collapse: collapse; }}
+.trade-table th {{ border-bottom: 1px solid #485460; padding: 8px; color: #808e9b; background: #050505; sticky: top; }}
+.trade-table td {{ border-bottom: 1px solid #2d3436; padding: 10px; text-align: center; }}
 
-.digit-box {{
-    display: inline-block;
-    width: 0.76em;
-    text-align: center;
-}}
-
-.trade-table {{ 
-    width: 100%; 
-    color: #dcdde1; 
-    font-family: 'Orbitron', sans-serif; 
-    font-size: 11px; 
-    border-collapse: collapse; 
-    font-weight: 500; 
-    letter-spacing: 1px;
-    table-layout: fixed; 
-}}
-
-.trade-table th {{ 
-    border-bottom: 1px solid #485460; 
-    padding: 8px 2px; 
-    color: #808e9b; 
-    text-align: center; 
-    background: #050505; 
-    position: sticky; 
-    top: 0; 
-    font-weight: 900;
-}}
-
-.trade-table td {{ 
-    border-bottom: 1px solid #2d3436; 
-    padding: 10px 2px; 
-    text-align: center; 
-    font-variant-numeric: tabular-nums; 
-    overflow: hidden;
-    white-space: nowrap; 
-    text-overflow: ellipsis;
-}}
-
-.screw {{ position: absolute; width: 6px; height: 6px; background: #57606f; border-radius: 50%; border: 1px solid #2f3640; z-index: 5; }}
+.screw {{ position: absolute; width: 6px; height: 6px; background: #57606f; border-radius: 50%; }}
 .tl {{top:6px; left:6px;}} .tr {{top:6px; right:6px;}} .bl {{bottom:6px; left:6px;}} .br {{bottom:6px; right:6px;}}
 </style>
 """
 st.markdown(css_template, unsafe_allow_html=True)
 
 # ==========================================
-# 4. JAVASCRIPT INJECTION (CONFETTI)
+# 4. RENDERING
 # ==========================================
-confetti_html = """
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-<script>
-    const doc = window.parent.document;
-    let touchStartX = 0;
-    let touchStartY = 0;
-
-    function shootConfetti() {
-        try { window.navigator.vibrate(200); } catch(e) {}
-        var duration = 3000;
-        var animationEnd = Date.now() + duration;
-        var defaults = { startVelocity: 45, spread: 360, ticks: 60, zIndex: 2147483647 };
-        var randomInRange = (min, max) => Math.random() * (max - min) + min;
-
-        var interval = setInterval(function() {
-            var timeLeft = animationEnd - Date.now();
-            if (timeLeft <= 0) { return clearInterval(interval); }
-            var particleCount = 50 * (timeLeft / duration);
-            confetti(Object.assign({}, defaults, { 
-                particleCount, 
-                origin: { x: randomInRange(0.1, 0.9), y: Math.random() - 0.2 } 
-            }));
-        }, 250);
-        
-        confetti({
-            particleCount: 150, spread: 120, origin: { y: 1 },
-            colors: ['#0be881', '#ffffff', '#57606f'],
-            startVelocity: 85, gravity: 0.8, scalar: 1.2, zIndex: 2147483647
-        });
-    }
-
-    function onTouchStart(e) { touchStartX = e.changedTouches[0].screenX; touchStartY = e.changedTouches[0].screenY; }
-    function onTouchEnd(e) {
-        let touchEndX = e.changedTouches[0].screenX;
-        let touchEndY = e.changedTouches[0].screenY;
-        if (Math.abs(touchEndX - touchStartX) > 30) shootConfetti();
-    }
-
-    doc.addEventListener('touchstart', onTouchStart, true);
-    doc.addEventListener('touchend', onTouchEnd, true);
-</script>
-"""
-components.html(confetti_html, height=0)
-
-# ==========================================
-# 5. RENDER LOGIC
-# ==========================================
-if st.session_state.trigger_haptic:
-    components.html("""<script>try { window.navigator.vibrate(50); } catch(e) {}</script>""", height=0)
-    st.session_state.trigger_haptic = False
-
 st.button(" ", on_click=toggle_secure, key="overlay_btn")
 
-val_str = "0"
-if acct: 
-    val_str = f"{float(acct['NAV']):.0f}"
-
+val_str = f"{float(acct['NAV']):.0f}" if acct else "0"
 char_len = len(val_str) + 1
-if char_len <= 4: f_size = "min(27vh, 27vw)"      
-elif char_len <= 5: f_size = "min(21.5vh, 21.5vw)"     
-elif char_len <= 6: f_size = "min(18.5vh, 18.5vw)"     
-elif char_len <= 7: f_size = "min(14.5vh, 14.5vw)"     
-elif char_len <= 8: f_size = "min(11vh, 11vw)"     
-else: f_size = "min(9vh, 9vw)"                      
-
-digits_html = "".join([f'<span class="digit-box">{char}</span>' for char in val_str])
-nav_str = f'<span class="digit-box" style="font-size: 50%;">£</span>{digits_html}'
-
-show_tsl_cols = False
-if trades:
-    for t in trades:
-        if 'trailingStopLossOrder' in t and t['trailingStopLossOrder'].get('triggerPrice'):
-            show_tsl_cols = True
-            break
+f_size = "min(20vh, 20vw)" if char_len < 6 else "min(15vh, 15vw)"
+nav_html = f'<span style="font-size:50%">£</span>' + "".join([f'<span class="digit-box">{c}</span>' for c in val_str])
 
 rows = ""
 if trades:
     for t in trades:
-        u = float(t['currentUnits'])
-        entry = float(t.get('price', 0))
-        pl = float(t['unrealizedPL'])
+        u, pl = float(t['currentUnits']), float(t['unrealizedPL'])
         side = "LONG" if u > 0 else "SHORT"
-        pl_color = "#0be881" if pl >= 0 else "#ff9f43"
-        dir_color = "#0be881" if u > 0 else "#ff3f34"
-        tsl, l_s, l_c = "-", "-", "#dcdde1"
-        if 'trailingStopLossOrder' in t:
-            trig = t['trailingStopLossOrder'].get('triggerPrice')
-            if trig:
-                tv = float(trig)
-                tsl = f"{tv:.3f}"
-                l_s, l_c = "WAIT", "#ff9f43"
-                if (u > 0 and tv > entry) or (u < 0 and tv < entry): l_s, l_c = "LOCKED", "#0be881"
-        extra_cells = f"<td>{tsl}</td><td style='color:{l_c}; font-weight:bold;'>{l_s}</td>" if show_tsl_cols else ""
-        rows += f"<tr><td style='color: {dir_color}'>{side}</td><td>{u:.1f}</td><td>{t['instrument'].replace('_','/')}</td><td style='color:{pl_color}'>£{pl:.2f}</td>{extra_cells}</tr>"
+        rows += f"<tr><td>{side}</td><td>{u}</td><td>{t['instrument']}</td><td style='color:{'#0be881' if pl >= 0 else '#ff9f43'}'>£{pl:.2f}</td></tr>"
 else:
-    rows = f"<tr><td colspan='{6 if show_tsl_cols else 4}' style='padding:20px; color:#57606f; font-style:italic;'>NO SIGNAL DETECTED</td></tr>"
+    rows = "<tr><td colspan='4'>NO ACTIVE TRADES</td></tr>"
 
-extra_headers = "<th>TSL</th><th>LOCK</th>" if show_tsl_cols else ""
-
-margin_display_text = f"{real_margin_pct:.1f}%"
+margin_text = f"{real_margin_pct:.1f}%"
 
 dashboard_html = f"""
 <div class="dashboard-container">
     <div class="nav-box">
-        <div class="screw tl"></div><div class="screw tr"></div>
-        <div class="screw bl"></div><div class="screw br"></div>
-        <div class="label-text">NAV MONITOR</div>
-        <div class="screen">
-            <div class="nav-value" style="font-size: {f_size};">{nav_str}</div>
-        </div>
+        <div class="screw tl"></div><div class="screw tr"></div><div class="screw bl"></div><div class="screw br"></div>
+        <div style="font-family:'Orbitron'; color:#808e9b; font-size:12px; margin-bottom:5px;">NAV MONITOR</div>
+        <div class="screen"><div class="nav-value" style="font-size:{f_size}">{nav_html}</div></div>
     </div>
-    
-    <div class="margin-box">
-        <div class="label-text" style="margin-bottom:4px;">MARGIN LOAD</div>
-        <div class="progress-track">
-            {margin_display_text}
-            <div class="progress-fill" style="width: {visual_width}%; background-color: {margin_color};">
-                <div class="progress-text-overlay">{margin_display_text}</div>
-                <div class="scale-marker"></div>
+
+    <div style="padding:0 5px;">
+        <div style="font-family:'Orbitron'; color:#808e9b; font-size:12px;">MARGIN LOAD (MAX 50%)</div>
+        <div class="margin-container">
+            <div class="base-text">{margin_text}</div>
+            <div class="progress-fill">
+                <div class="overlay-text">{margin_text}</div>
             </div>
         </div>
     </div>
 
     <div class="trade-box">
-        <div class="screw tl"></div><div class="screw tr"></div>
-        <div class="screw bl"></div><div class="screw br"></div>
-        <div class="label-text">ACTIVE TRANSMISSIONS</div>
-        <div class="screen" style="display:block; padding:0; flex:1; min-height:0; overflow-y:auto;">
+        <div class="screw tl"></div><div class="screw tr"></div><div class="screw bl"></div><div class="screw br"></div>
+        <div style="font-family:'Orbitron'; color:#808e9b; font-size:12px; margin-bottom:5px;">TRANSMISSIONS</div>
+        <div class="screen" style="display:block; overflow-y:auto;">
             <table class="trade-table">
-                <thead><tr><th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th>{extra_headers}</tr></thead>
+                <thead><tr><th>DIR</th><th>UNITS</th><th>INST</th><th>P/L</th></tr></thead>
                 <tbody>{rows}</tbody>
             </table>
         </div>
