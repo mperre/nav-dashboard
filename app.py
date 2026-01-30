@@ -180,12 +180,11 @@ css_template = f"""
 
 .nav-value {{ font-family: 'Orbitron', sans-serif; color: #0be881; font-weight: 700; }}
 
-/* ADJUSTED FOR SEPARATION */
+/* REVERTED TO ORIGINAL SPACING */
 .digit-box {{ 
     display: inline-block; 
-    width: 1.0em; /* Increased width */
+    width: 0.76em; 
     text-align: center; 
-    margin: 0 2px; /* Added spacing between digits */
 }}
 
 .trade-table {{ width: 100%; color: #dcdde1; font-family: 'Orbitron', sans-serif; font-size: 11px; border-collapse: collapse; }}
