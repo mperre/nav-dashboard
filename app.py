@@ -109,6 +109,10 @@ H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/
 /9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9
 H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/
 0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f
+/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R
+/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9
+H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/
+0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f
 /R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f
 """
 
@@ -255,7 +259,7 @@ div.stButton > button:active {{ background: transparent !important; }}
 /* Reset Streamlit default padding */
 .block-container {{
     margin-top: -55px !important; 
-    padding: 20px 10px 0 10px !important;
+    padding: 10px 10px 10px 10px !important;
     max-width: 100% !important;
     height: 100vh !important;
     display: flex;
@@ -269,7 +273,7 @@ div.stButton > button:active {{ background: transparent !important; }}
     display: flex;
     flex-direction: column;
     gap: 12px;
-    height: calc(100vh - 30px);
+    height: calc(100vh - 20px);
 }}
 
 .nav-box, .trade-box {{
