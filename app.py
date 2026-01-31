@@ -81,22 +81,6 @@ H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/
 /9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9
 H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/
 0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f
-/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R
-/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9
-H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/
-0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f
-/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R
-/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9
-H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/
-0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f
-/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R
-/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9
-H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/
-0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f
-/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R
-/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9
-H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/
-0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f
 /R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f
 """
 
@@ -243,7 +227,7 @@ div.stButton > button:active {{ background: transparent !important; }}
 /* Reset Streamlit default padding */
 .block-container {{
     margin-top: -55px !important; 
-    padding: 45px 10px 10px 10px !important; /* INCREASED TOP PADDING */
+    padding: 45px 10px 10px 10px !important; /* MATCHING BORDER PADDING */
     max-width: 100% !important;
     height: 100vh !important;
     display: flex;
@@ -257,7 +241,7 @@ div.stButton > button:active {{ background: transparent !important; }}
     display: flex;
     flex-direction: column;
     gap: 12px;
-    height: calc(100vh - 55px); /* ADJUSTED HEIGHT */
+    height: calc(100vh - 55px);
 }}
 
 .nav-box, .trade-box {{
@@ -272,8 +256,9 @@ div.stButton > button:active {{ background: transparent !important; }}
 
 /* --- DYNAMIC SIZING --- */
 .nav-box {{ 
-    flex: 1 1 auto; 
-    min-height: 140px; 
+    flex: 0 0 auto; /* STOPPED GROWING (Reduced Height) */
+    height: 18vh;   /* Fixed reduced height */
+    min-height: 120px; 
 }}
 
 .margin-box-wrapper {{
@@ -382,7 +367,9 @@ st.button(" ", on_click=toggle_secure, key="overlay_btn")
 
 val_str = f"{float(acct['NAV']):.0f}" if acct else "0"
 char_len = len(val_str) + 1
-f_size = "min(20vh, 20vw)" if char_len < 6 else "min(15vh, 15vw)"
+# REDUCED FONT SCALING TO FIT SMALLER BOX
+f_size = "min(14vh, 14vw)" if char_len < 6 else "min(10vh, 10vw)"
+
 nav_html = f'<span style="font-size:50%">£</span>' + "".join([f'<span class="digit-box">{c}</span>' for c in val_str])
 
 rows = ""
