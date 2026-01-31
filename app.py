@@ -81,6 +81,22 @@ H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/
 /9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9
 H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/
 0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f
+/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R
+/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9
+H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/
+0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f
+/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R
+/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9
+H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/
+0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f
+/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R
+/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9
+H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/
+0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f
+/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R
+/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9
+H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/
+0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f
 /R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f
 """
 
@@ -227,7 +243,7 @@ div.stButton > button:active {{ background: transparent !important; }}
 /* Reset Streamlit default padding */
 .block-container {{
     margin-top: -55px !important; 
-    padding: 25px 10px 10px 10px !important;
+    padding: 45px 10px 10px 10px !important; /* INCREASED TOP PADDING */
     max-width: 100% !important;
     height: 100vh !important;
     display: flex;
@@ -241,7 +257,7 @@ div.stButton > button:active {{ background: transparent !important; }}
     display: flex;
     flex-direction: column;
     gap: 12px;
-    height: calc(100vh - 35px);
+    height: calc(100vh - 55px); /* ADJUSTED HEIGHT */
 }}
 
 .nav-box, .trade-box {{
