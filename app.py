@@ -7,21 +7,12 @@ import base64
 # ==========================================
 # 0. SOUND ASSET (Base64 Encoded "Ka-Ching")
 # ==========================================
-# This prevents CORS errors and external dependency issues.
 CASH_REGISTER_MP3 = """
 SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//uQZA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWgAAAA0AAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAAScc8T+4AAA
 AAAAAAAAAAAAAAAAAAAP/7kmRAABfdozL0wAAR+TRmXpgAAxp1WfMvAAADLqs+ZeAA
 AEFuaM7qO/M5/0f/R//R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f
-/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R
-/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9
-H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/
-0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f
-/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R
-/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9
-H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/
-0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f
 /R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R
 /9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9
 H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/0f/R/9H/
@@ -241,6 +232,25 @@ css_template = f"""
 .stApp {{ background-color: #000000 !important; overflow: hidden !important; }}
 #MainMenu, footer, header {{visibility: hidden !important;}}
 [data-testid="stToolbar"] {{display: none !important;}}
+
+/* --- INVISIBLE FULL-SCREEN TOGGLE BUTTON --- */
+div.stButton > button:first-child {{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: transparent !important;
+    border: none !important;
+    z-index: 99999 !important;
+    color: transparent !important;
+    opacity: 0 !important;
+    cursor: default !important;
+}}
+/* Remove interactions on hover/focus to keep it invisible */
+div.stButton > button:hover {{ background: transparent !important; }}
+div.stButton > button:focus {{ background: transparent !important; box-shadow: none !important; }}
+div.stButton > button:active {{ background: transparent !important; }}
 
 /* Reset Streamlit default padding */
 .block-container {{
